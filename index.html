@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>JsVeX</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JSVEX</title>
+    <!-- css files -->
+    <link rel="stylesheet" href="data/uikit-develop/docs/css/uikit.docs.min.css">
+    <script src="jsvex.js" type="text/javascript"></script>
+    <script src="underscore-min.js" type="text/javascript"></script>
+</head>
+<body>
+
+<script>
+    function onsubmit() {
+        var form = document.forms["jsvex"];
+
+        _JsVex.load(form["url"].value,
+                function() {
+                    form["body"].value = JSON.stringify(_JsVex.extract(window, [], "", 15, 5000),
+                            "", "\t");
+                }, true);
+    }
+</script>
+
+<div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
+
+    <div class="uk-panel uk-panel-space uk-text-center">
+        <h1 class="uk-panel-teaser uk-h1"><b>J</b>ava<b>S</b>cript <b>V</b>ariable <b>EX</b>tractor</h1>
+        <form id="jsvex" class="uk-form uk-form-stacked" action="javascript:void(0);"
+              onsubmit="window.onsubmit()">
+
+            <div class="uk-form-row uk-text-center">
+                <input id="url" class="uk-form-width-large" type="text" value="data/PyScript-master/pyscript.debug.js">
+            </div>
+            <div class="uk-form-row uk-text-center">
+                <textarea id="body" class="uk-form-width-large" placeholder="" style="height: 350px;"></textarea>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+</body>
+</html>
