@@ -19,51 +19,77 @@ class _JsVex {
 
     static filter(value: string): boolean {
         if (value.length > 1)
-            return value.charCodeAt(0) != 95;
+            return value.charCodeAt(0) != 95 && value !=  "prototype" && value != "constructor" && value.toUpperCase() != value &&
+                value.indexOf("moz") == -1 && (value.indexOf("HTML") == -1 || value == "HTMLElement");
         else
             return value.charCodeAt(0) == 95;
     }
 
-    static extract(obj: any, results: any, path: string, maxRecursion: number, maxLength: number) {
+    static extractClasses(obj: any, results: any, path: string, maxRecursion: number, maxLength: number, add: boolean) {
         if (maxRecursion <= 0 ||  // no more recursions available
             obj === undefined ||  // object isn't defined
+            obj === null ||
             results.length > maxLength ||   // results reached max size
             _JsVex.cache.indexOf(_JsVex.type(obj)) != -1  // object type already cached
         ) {
             // Exit recursion
             return results;
         }
-
         // Decrease number of available recursions
         maxRecursion--;
 
-        let basePath: string = path == "" ? path : path + ".";
+        _.each(_JsVex.getProps(obj, path), function(prop: MetaProp) {
+            let value = undefined;
+            try {
+                value = obj[prop.name];
+            }
+            catch(e) {
+                return;
+            }
+            if (_JsVex.cache.indexOf(prop.type) == -1) _JsVex.cache.push(prop.type);
 
-        _.each(_JsVex.getProps(obj, 0, path || "global"), function(prop: MetaProp) {
-            if (prop.type != "Object")
-                _JsVex.cache.push(prop.type);
+            if (value && value.prototype && prop.name.length < 15) {
+                let path = prop.name;
+                let proto = Object.getPrototypeOf(value.prototype);
+                if (proto) {
+                    let str = proto.constructor.toString();
+                    path += ":" + str.slice(9, str.indexOf("("));
+                }
 
-            _JsVex.extract(obj[prop.name], results, basePath + prop.name, maxRecursion, maxLength);
+                _JsVex.extractClasses(value.prototype, results, path, maxRecursion, maxLength, true);
+                if (_JsVex.cache.indexOf(prop.name) == -1) _JsVex.cache.push(prop.name);
+            }
 
-            results.push(prop);
+            _JsVex.extractClasses(value, results, path + "." + prop.name, maxRecursion, maxLength, false);
+            if (add && value) results.push(prop);
         });
-
-        return results;
+    }
+    
+    static getArgs(fun: Function):string {
+        if (_JsVex.type(fun) == "Function")
+            return fun.toString().match(/^[\s\(]*function[^(]*(\([^)]*\))/)[1];
     }
 
-    static getProps(object: any, score: number, path: string):List<MetaProp> {
-        return _.chain(Object.getOwnPropertyNames(object))
+    static getProps(object: any, path: string):List<any> {
+        let props = Object.getOwnPropertyNames(object);
+
+        return _.chain(props)
             .filter(_JsVex.filter)
             .map(function(name) {
-                return {name: name, value: name, path: path, score: score, type: _JsVex.type(object[name])};
+                // try {
+                //     let value = object[name];
+                //     return {name: name, path: path, type: _JsVex.type(value)};
+                // }
+                // catch(e) {
+                //     return {name: name, path: path};
+                // }
+                return {name: name, path: path};
             }).value();
     }
 }
 
 interface MetaProp {
     name: string;
-    value: string;
     path: string;
-    score: number;
-    type: string
+    type: string;
 }

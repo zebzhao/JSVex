@@ -17,12 +17,14 @@
 <script>
     function onsubmit() {
         var form = document.forms["jsvex"];
-
-        _JsVex.load(form["url"].value,
-                function() {
-                    form["body"].value = JSON.stringify(_JsVex.extract(window, [], "", 15, 5000),
-                            "", "\t");
-                }, true);
+        var results = [];
+        _JsVex.extractClasses(window, results, "window", 2, 5000);
+        console.log(results.length);
+        results = _.groupBy(results, "path");
+        results = _.mapObject(results, function(value) {
+            return _.pluck(value, "name");
+        });
+        form["body"].value = JSON.stringify(results, "", "\t");
     }
 </script>
 
@@ -34,7 +36,7 @@
               onsubmit="window.onsubmit()">
 
             <div class="uk-form-row uk-text-center">
-                <input id="url" class="uk-form-width-large" type="text" value="data/PyScript-master/pyscript.debug.js">
+                <input id="url" class="uk-form-width-large" type="text" value="data/EaselJS-master//lib/easeljs-0.8.2.combined.js">
             </div>
             <div class="uk-form-row uk-text-center">
                 <textarea id="body" class="uk-form-width-large" placeholder="" style="height: 350px;"></textarea>
