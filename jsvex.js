@@ -14,10 +14,23 @@ var _JsVex = (function () {
     };
     _JsVex.filter = function (value) {
         if (value.length > 1)
-            return value.charCodeAt(0) != 95 && value != "prototype" && value != "constructor" && value.toUpperCase() != value &&
-                value.indexOf("moz") == -1 && (value.indexOf("HTML") == -1 || value == "HTMLElement");
+            return value.charCodeAt(0) != 95 && value.toUpperCase() != value && value != "constructor" && value.indexOf("moz") == -1;
         else
             return value.charCodeAt(0) == 95;
+    };
+    _JsVex.extractClassHierarchy = function (obj, results) {
+        _.each(_JsVex.getProps(obj, ""), function (prop) {
+            var value = obj[prop.name];
+            if (value.prototype) {
+                if (Object.getPrototypeOf(value.prototype)) {
+                    var proto = Object.getPrototypeOf(value.prototype).constructor.toString();
+                    results[prop.name] = proto.slice(9, proto.indexOf('('));
+                }
+                else {
+                    results[prop.name] = null;
+                }
+            }
+        });
     };
     _JsVex.extractClasses = function (obj, results, path, maxRecursion, maxLength, add) {
         if (maxRecursion <= 0 ||
@@ -32,28 +45,20 @@ var _JsVex = (function () {
         // Decrease number of available recursions
         maxRecursion--;
         _.each(_JsVex.getProps(obj, path), function (prop) {
-            var value = undefined;
+            var value;
             try {
                 value = obj[prop.name];
             }
             catch (e) {
                 return;
             }
-            if (_JsVex.cache.indexOf(prop.type) == -1)
-                _JsVex.cache.push(prop.type);
-            if (value && value.prototype && prop.name.length < 15) {
-                var path_1 = prop.name;
-                var proto = Object.getPrototypeOf(value.prototype);
-                if (proto) {
-                    var str = proto.constructor.toString();
-                    path_1 += ":" + str.slice(9, str.indexOf("("));
-                }
-                _JsVex.extractClasses(value.prototype, results, path_1, maxRecursion, maxLength, true);
+            if (value && value.prototype) {
+                _JsVex.extractClasses(value.prototype, results, prop.name, maxRecursion, maxLength, true);
                 if (_JsVex.cache.indexOf(prop.name) == -1)
                     _JsVex.cache.push(prop.name);
             }
             _JsVex.extractClasses(value, results, path + "." + prop.name, maxRecursion, maxLength, false);
-            if (add && value)
+            if (add)
                 results.push(prop);
         });
     };
@@ -66,14 +71,12 @@ var _JsVex = (function () {
         return _.chain(props)
             .filter(_JsVex.filter)
             .map(function (name) {
-            // try {
-            //     let value = object[name];
-            //     return {name: name, path: path, type: _JsVex.type(value)};
-            // }
-            // catch(e) {
-            //     return {name: name, path: path};
-            // }
-            return { name: name, path: path };
+            try {
+                return { name: name, path: path, type: _JsVex.type(object[name]) };
+            }
+            catch (e) {
+                return { name: name, path: path };
+            }
         }).value();
     };
     _JsVex.cache = [];

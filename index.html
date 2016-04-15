@@ -17,14 +17,20 @@
 <script>
     function onsubmit() {
         var form = document.forms["jsvex"];
+        var classes = _.pick(window,
+                "Node", "Element", "Array", "Function", "Object", "Number",
+                "Boolean", "String", "HTMLElement", "Event", "Error", "EventTarget");
         var results = [];
-        _JsVex.extractClasses(window, results, "window", 2, 5000);
+        _JsVex.extractClasses(classes, results, "window", 2, 5000);
         console.log(results.length);
-        results = _.groupBy(results, "path");
-        results = _.mapObject(results, function(value) {
-            return _.pluck(value, "name");
+        results = _.chain(results).groupBy("path").mapObject(function(value) {
+            return _.chain(value).indexBy("name").mapObject(function(value) {
+                return value.type;
+            });
         });
-        form["body"].value = JSON.stringify(results, "", "\t");
+        var hierarchy = {};
+        _JsVex.extractClassHierarchy(classes, hierarchy);
+        form["body"].value = JSON.stringify(hierarchy, "", "\t") + '\n' + JSON.stringify(results, "", "\t");
     }
 </script>
 
