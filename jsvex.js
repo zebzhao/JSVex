@@ -3,83 +3,130 @@ var _JsVex = (function () {
     function _JsVex() {
     }
     _JsVex.load = function (url, onLoad) {
+        if (url.length == 0) {
+            onLoad.call(null);
+            return;
+        }
         var script = document.createElement("SCRIPT");
         document.head.appendChild(script);
         script.addEventListener("load", onLoad);
         script.src = url;
+        console.log(url);
         return script;
+    };
+    _JsVex.join = function (root, path) {
+        return root.length ? root + "." + path : path;
     };
     _JsVex.type = function (obj) {
         return Object.prototype.toString.call(obj).slice(8, -1);
     };
     _JsVex.filter = function (value) {
         if (value.length > 1)
-            return value.charCodeAt(0) != 95 && value.toUpperCase() != value && value != "constructor" && value.indexOf("moz") == -1;
+            return value.charCodeAt(0) != 95 &&
+                value.toUpperCase() != value &&
+                value != "constructor" &&
+                value.indexOf("_") == -1 &&
+                value.indexOf("moz") == -1;
         else
             return value.charCodeAt(0) == 95;
     };
-    _JsVex.extractClassHierarchy = function (obj, results) {
-        _.each(_JsVex.getProps(obj, ""), function (prop) {
-            var value = obj[prop.name];
-            if (value.prototype) {
-                if (Object.getPrototypeOf(value.prototype)) {
-                    var proto = Object.getPrototypeOf(value.prototype).constructor.toString();
-                    results[prop.name] = proto.slice(9, proto.indexOf('('));
-                }
-                else {
-                    results[prop.name] = null;
-                }
-            }
-        });
+    _JsVex.getUUID = function (object) {
+        var result = _JsVex.uuidMap.get(object) ? _JsVex.uuidMap.get(object) : ++_JsVex.uuid;
+        result = result.toString();
+        _JsVex.uuidMap.set(object, result);
+        return result;
     };
-    _JsVex.extractClasses = function (obj, results, path, maxRecursion, maxLength, add) {
+    _JsVex.extractAll = function (ignoreWindow) {
+        var results = [[], {}];
+        var obj = ignoreWindow ? _.omit(window, _JsVex.windowProps) :
+            _.extend(_.omit(window, _JsVex.ignoreWindowProps), _.pick(window, _JsVex.chosenWindowProps));
+        _JsVex.extractClasses(obj, results[0], "", 3, 2000);
+        _JsVex.extractClassHierarchy(obj, results[1], 3);
+        results[0] = _.chain(results[0])
+            .groupBy("uuid")
+            .mapObject(function (value, uuid) {
+            return { path: _JsVex.pathMap.get(uuid), properties: _.chain(value).indexBy("name").mapObject(function (v) {
+                    return v.type;
+                }) };
+        }).value();
+        return results;
+    };
+    _JsVex.extractClassHierarchy = function (obj, results, maxRecursion) {
         if (maxRecursion <= 0 ||
             obj === undefined ||
-            obj === null ||
-            results.length > maxLength ||
-            _JsVex.cache.indexOf(_JsVex.type(obj)) != -1 // object type already cached
-        ) {
+            obj === null) {
             // Exit recursion
-            return results;
+            return;
         }
-        // Decrease number of available recursions
-        maxRecursion--;
-        _.each(_JsVex.getProps(obj, path), function (prop) {
-            var value;
-            try {
-                value = obj[prop.name];
-            }
-            catch (e) {
-                return;
-            }
-            if (value && value.prototype) {
-                _JsVex.extractClasses(value.prototype, results, prop.name, maxRecursion, maxLength, true);
-                if (_JsVex.cache.indexOf(prop.name) == -1)
-                    _JsVex.cache.push(prop.name);
-            }
-            _JsVex.extractClasses(value, results, path + "." + prop.name, maxRecursion, maxLength, false);
-            if (add)
-                results.push(prop);
-        });
+        else {
+            maxRecursion--;
+            _.each(_JsVex.properties(obj), function (prop) {
+                if (prop.value) {
+                    var proto = prop.value.prototype;
+                    if (proto && Object.getOwnPropertyNames(proto).length > 1) {
+                        var superclass = Object.getPrototypeOf(proto);
+                        if (superclass) {
+                            results[_JsVex.getUUID(proto)] = _JsVex.getUUID(superclass);
+                        }
+                    }
+                    else {
+                        _JsVex.extractClassHierarchy(prop.value, results, maxRecursion);
+                    }
+                }
+            });
+        }
     };
-    _JsVex.getArgs = function (fun) {
-        if (_JsVex.type(fun) == "Function")
-            return fun.toString().match(/^[\s\(]*function[^(]*(\([^)]*\))/)[1];
+    _JsVex.extractClasses = function (obj, results, path, maxRecursion, maxLength) {
+        if (maxRecursion <= 0 ||
+            obj === undefined ||
+            results.length > maxLength ||
+            obj === null) {
+            // Exit recursion
+            return;
+        }
+        else {
+            // Decrease number of available recursions
+            maxRecursion--;
+            _JsVex.pathMap.set(_JsVex.getUUID(obj), path);
+            _.each(_JsVex.properties(obj), function (prop) {
+                if (prop.value) {
+                    if (prop.value.prototype) {
+                        _JsVex.extractClasses(prop.value.prototype, results, _JsVex.join(path, prop.name), maxRecursion, maxLength);
+                    }
+                    if (_JsVex.ignoreTypes.indexOf(_JsVex.type(Object.getPrototypeOf(prop.value))) == -1) {
+                        _JsVex.extractClasses(prop.value, results, _JsVex.join(path, prop.name), maxRecursion, maxLength);
+                    }
+                    results.push(prop);
+                }
+            });
+        }
     };
-    _JsVex.getProps = function (object, path) {
+    _JsVex.properties = function (object) {
         var props = Object.getOwnPropertyNames(object);
+        var uuid = _JsVex.getUUID(object);
         return _.chain(props)
             .filter(_JsVex.filter)
             .map(function (name) {
+            var result = { uuid: uuid, name: name, type: null, value: null };
             try {
-                return { name: name, path: path, type: _JsVex.type(object[name]) };
+                result.value = object[name];
+                result.type = _JsVex.type(result.value);
             }
-            catch (e) {
-                return { name: name, path: path };
-            }
+            catch (e) { }
+            return result;
         }).value();
     };
-    _JsVex.cache = [];
+    _JsVex.uuid = 0;
+    _JsVex.uuidMap = new Map();
+    _JsVex.pathMap = new Map();
+    _JsVex.windowProps = Object.getOwnPropertyNames(window);
+    // Do not recurse over these types.
+    _JsVex.ignoreTypes = ["Array", "Boolean", "Number", "String", "Function"];
+    // These props all result in cyclic references to window
+    _JsVex.ignoreWindowProps = ["self", "frames", "parent", "content", "window", "top", "_"];
+    // These props are picked off the window by default if no url is provided.
+    _JsVex.chosenWindowProps = ["Node", "Element", "Array", "Function", "Object", "Number",
+        "Boolean", "String", "RegExp", "HTMLElement", "Event", "Error", "EventTarget", "Date"];
     return _JsVex;
 }());
 //# sourceMappingURL=jsvex.js.map

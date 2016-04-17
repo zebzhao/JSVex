@@ -3,14 +3,35 @@
 import List = _.List;
 
 class _JsVex {
-    static cache: Array<string> = [];
+    static uuid: number = 0;
+    static uuidMap = new Map();
+    static pathMap = new Map();
+
+    static windowProps: Array<string> = Object.getOwnPropertyNames(window);
+    // Do not recurse over these types.
+    static ignoreTypes: Array<string> = ["Array", "Boolean", "Number", "String", "Function"];
+    // These props all result in cyclic references to window
+    static ignoreWindowProps: Array<string> = ["self", "frames", "parent", "content", "window", "top", "_"];
+    // These props are picked off the window by default if no url is provided.
+    static chosenWindowProps: Array<string> = ["Node", "Element", "Array", "Function", "Object", "Number",
+        "Boolean", "String", "RegExp", "HTMLElement", "Event", "Error", "EventTarget", "Date"];
+
 
     static load(url: string, onLoad: EventListener): HTMLScriptElement {
+        if (url.length == 0) {
+            onLoad.call(null);
+            return;
+        }
         let script: HTMLScriptElement = document.createElement("SCRIPT") as HTMLScriptElement;
         document.head.appendChild(script);
         script.addEventListener("load", onLoad);
         script.src = url;
+        console.log(url);
         return script;
+    }
+
+    static join(root, path) {
+        return root.length ? root + "." + path : path;
     }
 
     static type(obj: any):string {
@@ -19,81 +40,118 @@ class _JsVex {
 
     static filter(value: string): boolean {
         if (value.length > 1)
-            return value.charCodeAt(0) != 95 && value.toUpperCase() != value && value != "constructor" && value.indexOf("moz") == -1;
+            return value.charCodeAt(0) != 95 &&
+                value.toUpperCase() != value &&
+                value != "constructor" &&
+                value.indexOf("_") == -1 &&
+                value.indexOf("moz") == -1;
         else
             return value.charCodeAt(0) == 95;
     }
 
-    static extractClassHierarchy(obj: any, results: any) {
-        _.each(_JsVex.getProps(obj, ""), function(prop: MetaProp) {
-            let value = obj[prop.name];
-            if (value.prototype) {
-                if (Object.getPrototypeOf(value.prototype)) {
-                    let proto = Object.getPrototypeOf(value.prototype).constructor.toString();
-                    results[prop.name] = proto.slice(9, proto.indexOf('('));
-                }
-                else {
-                    results[prop.name] = null;
-                }
-            }
-        })
-    }
-
-    static extractClasses(obj: any, results: any, path: string, maxRecursion: number, maxLength: number, add: boolean) {
-        if (maxRecursion <= 0 ||  // no more recursions available
-            obj === undefined ||  // object isn't defined
-            obj === null ||
-            results.length > maxLength ||   // results reached max size
-            _JsVex.cache.indexOf(_JsVex.type(obj)) != -1  // object type already cached
-        ) {
-            // Exit recursion
-            return results;
-        }
-        // Decrease number of available recursions
-        maxRecursion--;
-
-        _.each(_JsVex.getProps(obj, path), function(prop: MetaProp) {
-            let value;
-            try {
-                value = obj[prop.name];
-            }
-            catch(e) {
-                return;
-            }
-
-            if (value && value.prototype) {
-                _JsVex.extractClasses(value.prototype, results, prop.name, maxRecursion, maxLength, true);
-                if (_JsVex.cache.indexOf(prop.name) == -1) _JsVex.cache.push(prop.name);
-            }
-
-            _JsVex.extractClasses(value, results, path + "." + prop.name, maxRecursion, maxLength, false);
-            if (add) results.push(prop);
-        });
+    static getUUID(object: any) {
+        let result = _JsVex.uuidMap.get(object) ? _JsVex.uuidMap.get(object) : ++_JsVex.uuid;
+        result = result.toString();
+        _JsVex.uuidMap.set(object, result);
+        return result;
     }
     
-    static getArgs(fun: Function):string {
-        if (_JsVex.type(fun) == "Function")
-            return fun.toString().match(/^[\s\(]*function[^(]*(\([^)]*\))/)[1];
+    static extractAll(ignoreWindow: boolean): Array<any> {
+        let results = [[], {}];
+        let obj = ignoreWindow ? _.omit(window, _JsVex.windowProps) :
+            _.extend(_.omit(window, _JsVex.ignoreWindowProps), _.pick(window, _JsVex.chosenWindowProps));
+
+        _JsVex.extractClasses(obj, results[0], "", 3, 2000);
+        _JsVex.extractClassHierarchy(obj, results[1], 3);
+
+        results[0] = _.chain(results[0])
+            .groupBy("uuid")
+            .mapObject(function(value, uuid) {
+                return {path: _JsVex.pathMap.get(uuid), properties: _.chain(value).indexBy("name").mapObject(function(v) {
+                    return v.type;
+                })};
+            }).value();
+        return results;
     }
 
-    static getProps(object: any, path: string):List<any> {
+    static extractClassHierarchy(obj: any, results: any, maxRecursion: number) {
+        if (maxRecursion <= 0 ||  // no more recursions available
+            obj === undefined ||  // object isn't defined
+            obj === null)
+        {
+            // Exit recursion
+            return;
+        }
+        else {
+            maxRecursion--;
+            _.each(_JsVex.properties(obj), function(prop: MetaProp) {
+                if (prop.value) {
+                    let proto = prop.value.prototype;
+                    if (proto && Object.getOwnPropertyNames(proto).length > 1) {
+                        let superclass = Object.getPrototypeOf(proto);
+                        if (superclass) {
+                            results[_JsVex.getUUID(proto)] = _JsVex.getUUID(superclass);
+                        }
+                    }
+                    else {
+                        _JsVex.extractClassHierarchy(prop.value, results, maxRecursion);
+                    }
+                }
+            })
+        }
+    }
+
+    static extractClasses(obj: any, results: any, path: string, maxRecursion: number, maxLength: number) {
+        if (maxRecursion <= 0 ||  // no more recursions available
+            obj === undefined ||  // object isn't defined
+            results.length > maxLength ||   // results reached max size
+            obj === null)
+        {
+            // Exit recursion
+            return;
+        }
+        else {
+            // Decrease number of available recursions
+            maxRecursion--;
+
+            _JsVex.pathMap.set(_JsVex.getUUID(obj), path);
+
+            _.each(_JsVex.properties(obj), function(prop: MetaProp) {
+                if (prop.value) {
+                    if (prop.value.prototype) {
+                        _JsVex.extractClasses(prop.value.prototype, results, _JsVex.join(path, prop.name),
+                            maxRecursion, maxLength);
+                    }
+                    if (_JsVex.ignoreTypes.indexOf(_JsVex.type(Object.getPrototypeOf(prop.value))) == -1) {
+                        _JsVex.extractClasses(prop.value, results, _JsVex.join(path, prop.name), maxRecursion, maxLength);
+                    }
+                    results.push(prop);
+                }
+            });
+        }
+    }
+
+    static properties(object: any):List<any> {
         let props = Object.getOwnPropertyNames(object);
+        let uuid = _JsVex.getUUID(object);
 
         return _.chain(props)
             .filter(_JsVex.filter)
             .map(function(name) {
+                let result: MetaProp = {uuid: uuid, name: name, type: null, value: null};
                 try {
-                    return {name: name, path: path, type: _JsVex.type(object[name])};
+                    result.value = object[name];
+                    result.type = _JsVex.type(result.value);
                 }
-                catch(e) {
-                    return {name: name, path: path};
-                }
+                catch(e) {}
+                return result;
             }).value();
     }
 }
 
 interface MetaProp {
+    uuid: number;
     name: string;
-    path: string;
     type: string;
+    value: any;
 }

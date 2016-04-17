@@ -3,8 +3,6 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>JsVeX</title>
-    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>JSVEX</title>
     <!-- css files -->
@@ -17,32 +15,20 @@
 <script>
     function onsubmit() {
         var form = document.forms["jsvex"];
-        var classes = _.pick(window,
-                "Node", "Element", "Array", "Function", "Object", "Number",
-                "Boolean", "String", "HTMLElement", "Event", "Error", "EventTarget");
-        var results = [];
-        _JsVex.extractClasses(classes, results, "window", 2, 5000);
-        console.log(results.length);
-        results = _.chain(results).groupBy("path").mapObject(function(value) {
-            return _.chain(value).indexBy("name").mapObject(function(value) {
-                return value.type;
-            });
+        _JsVex.load(form.url.value, function() {
+            form["body"].value = JSON.stringify(_JsVex.extractAll(form.url.value.length > 0), "", "\t");
         });
-        var hierarchy = {};
-        _JsVex.extractClassHierarchy(classes, hierarchy);
-        form["body"].value = JSON.stringify(hierarchy, "", "\t") + '\n' + JSON.stringify(results, "", "\t");
     }
 </script>
 
 <div class="uk-container uk-container-center uk-margin-top uk-margin-large-bottom">
 
     <div class="uk-panel uk-panel-space uk-text-center">
-        <h1 class="uk-panel-teaser uk-h1"><b>J</b>ava<b>S</b>cript <b>V</b>ariable <b>EX</b>tractor</h1>
         <form id="jsvex" class="uk-form uk-form-stacked" action="javascript:void(0);"
               onsubmit="window.onsubmit()">
 
             <div class="uk-form-row uk-text-center">
-                <input id="url" class="uk-form-width-large" type="text" value="data/EaselJS-master//lib/easeljs-0.8.2.combined.js">
+                <input id="url" class="uk-form-width-large" type="text" value="data/EaselJS-master/lib/easeljs-0.8.2.combined.js">
             </div>
             <div class="uk-form-row uk-text-center">
                 <textarea id="body" class="uk-form-width-large" placeholder="" style="height: 350px;"></textarea>
