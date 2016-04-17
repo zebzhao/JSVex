@@ -55,7 +55,7 @@ class _JsVex {
     static getUUID(object: any) {
         let result = _JsVex.uuidMap.get(object) ?
             _JsVex.uuidMap.get(object) :
-            'xxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            'xxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
                 var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
                 return v.toString(16);
             });
@@ -67,17 +67,21 @@ class _JsVex {
         let results = {"classes": [], "hierarchy": {}};
         let obj = ignoreWindow ? _underscore.omit(window, _JsVex.windowProps) :
             _underscore.extend(_underscore.omit(window, _JsVex.ignoreWindowProps), _underscore.pick(window, _JsVex.chosenWindowProps));
-        
+
         _JsVex.extractClasses(obj, results["classes"], "", 3, 2000);
         _JsVex.extractClassHierarchy(obj, results["hierarchy"], 3);
 
         results["classes"] = _underscore.chain(results["classes"])
-            .groupBy("uuid")
+            .each(function(v) {
+                v.path = _JsVex.pathMap.get(v.uuid);
+            })
+            .groupBy("path")
             .mapObject(function(value, uuid) {
-                return {path: _JsVex.pathMap.get(uuid), properties: _underscore.chain(value).indexBy("name").mapObject(function(v) {
+                return _underscore.chain(value).indexBy("name").mapObject(function(v) {
                     return v.type;
-                })};
+                });
             }).value();
+
         return results;
     }
 
@@ -97,7 +101,7 @@ class _JsVex {
                     if (proto && Object.getOwnPropertyNames(proto).length > 1) {
                         let superclass = Object.getPrototypeOf(proto);
                         if (superclass) {
-                            results[_JsVex.getUUID(proto)] = _JsVex.getUUID(superclass);
+                            results[_JsVex.pathMap.get(_JsVex.getUUID(proto))] = _JsVex.pathMap.get(_JsVex.getUUID(superclass));
                         }
                     }
                     else {

@@ -35,7 +35,7 @@ var _JsVex = (function () {
     _JsVex.getUUID = function (object) {
         var result = _JsVex.uuidMap.get(object) ?
             _JsVex.uuidMap.get(object) :
-            'xxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            'xxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });
@@ -49,11 +49,14 @@ var _JsVex = (function () {
         _JsVex.extractClasses(obj, results["classes"], "", 3, 2000);
         _JsVex.extractClassHierarchy(obj, results["hierarchy"], 3);
         results["classes"] = _underscore.chain(results["classes"])
-            .groupBy("uuid")
+            .each(function (v) {
+            v.path = _JsVex.pathMap.get(v.uuid);
+        })
+            .groupBy("path")
             .mapObject(function (value, uuid) {
-            return { path: _JsVex.pathMap.get(uuid), properties: _underscore.chain(value).indexBy("name").mapObject(function (v) {
-                    return v.type;
-                }) };
+            return _underscore.chain(value).indexBy("name").mapObject(function (v) {
+                return v.type;
+            });
         }).value();
         return results;
     };
@@ -72,7 +75,7 @@ var _JsVex = (function () {
                     if (proto && Object.getOwnPropertyNames(proto).length > 1) {
                         var superclass = Object.getPrototypeOf(proto);
                         if (superclass) {
-                            results[_JsVex.getUUID(proto)] = _JsVex.getUUID(superclass);
+                            results[_JsVex.pathMap.get(_JsVex.getUUID(proto))] = _JsVex.pathMap.get(_JsVex.getUUID(superclass));
                         }
                     }
                     else {
