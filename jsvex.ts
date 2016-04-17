@@ -2,16 +2,19 @@
 
 import List = _.List;
 
+var _underscore = _;
+delete _;
+
 class _JsVex {
     static uuid: number = 0;
     static uuidMap: Map = new Map();
     static pathMap: Map = new Map();
 
-    static windowProps: Array<string> = _.omit(Object.getOwnPropertyNames(window), ["_"]);
+    static windowProps: Array<string> = _underscore.keys(_underscore.omit(window, ["_"]));
     // Do not recurse over these types.
     static ignoreTypes: Array<string> = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window
-    static ignoreWindowProps: Array<string> = ["self", "frames", "parent", "content", "window", "top", "_"];
+    static ignoreWindowProps: Array<string> = ["self", "frames", "parent", "content", "window", "top"];
     // These props are picked off the window by default if no url is provided.
     static chosenWindowProps: Array<string> = ["Node", "Element", "Array", "Function", "Object", "Number",
         "Boolean", "String", "RegExp", "HTMLElement", "Event", "Error", "EventTarget", "Date"];
@@ -62,16 +65,16 @@ class _JsVex {
     
     static extractAll(ignoreWindow: boolean): Result {
         let results = {"classes": [], "hierarchy": {}};
-        let obj = ignoreWindow ? _.omit(window, _JsVex.windowProps) :
-            _.extend(_.omit(window, _JsVex.ignoreWindowProps), _.pick(window, _JsVex.chosenWindowProps));
-
+        let obj = ignoreWindow ? _underscore.omit(window, _JsVex.windowProps) :
+            _underscore.extend(_underscore.omit(window, _JsVex.ignoreWindowProps), _underscore.pick(window, _JsVex.chosenWindowProps));
+        
         _JsVex.extractClasses(obj, results["classes"], "", 3, 2000);
         _JsVex.extractClassHierarchy(obj, results["hierarchy"], 3);
 
-        results["classes"] = _.chain(results["classes"])
+        results["classes"] = _underscore.chain(results["classes"])
             .groupBy("uuid")
             .mapObject(function(value, uuid) {
-                return {path: _JsVex.pathMap.get(uuid), properties: _.chain(value).indexBy("name").mapObject(function(v) {
+                return {path: _JsVex.pathMap.get(uuid), properties: _underscore.chain(value).indexBy("name").mapObject(function(v) {
                     return v.type;
                 })};
             }).value();
@@ -88,7 +91,7 @@ class _JsVex {
         }
         else {
             maxRecursion--;
-            _.each(_JsVex.properties(obj), function(prop: MetaProp) {
+            _underscore.each(_JsVex.properties(obj), function(prop: MetaProp) {
                 if (prop.value) {
                     let proto = prop.value.prototype;
                     if (proto && Object.getOwnPropertyNames(proto).length > 1) {
@@ -120,7 +123,7 @@ class _JsVex {
 
             _JsVex.pathMap.set(_JsVex.getUUID(obj), path);
 
-            _.each(_JsVex.properties(obj), function(prop: MetaProp) {
+            _underscore.each(_JsVex.properties(obj), function(prop: MetaProp) {
                 if (prop.value) {
                     if (prop.value.prototype) {
                         _JsVex.extractClasses(prop.value.prototype, results, _JsVex.join(path, prop.name),
@@ -139,7 +142,7 @@ class _JsVex {
         let props = Object.getOwnPropertyNames(object);
         let uuid = _JsVex.getUUID(object);
 
-        return _.chain(props)
+        return _underscore.chain(props)
             .filter(_JsVex.filter)
             .map(function(name) {
                 let result: MetaProp = {uuid: uuid, name: name, type: null, value: null};

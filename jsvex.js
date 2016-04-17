@@ -1,4 +1,6 @@
 /// <reference path="underscore.d.ts" />
+var _underscore = _;
+delete _;
 var _JsVex = (function () {
     function _JsVex() {
     }
@@ -42,14 +44,14 @@ var _JsVex = (function () {
     };
     _JsVex.extractAll = function (ignoreWindow) {
         var results = { "classes": [], "hierarchy": {} };
-        var obj = ignoreWindow ? _.omit(window, _JsVex.windowProps) :
-            _.extend(_.omit(window, _JsVex.ignoreWindowProps), _.pick(window, _JsVex.chosenWindowProps));
+        var obj = ignoreWindow ? _underscore.omit(window, _JsVex.windowProps) :
+            _underscore.extend(_underscore.omit(window, _JsVex.ignoreWindowProps), _underscore.pick(window, _JsVex.chosenWindowProps));
         _JsVex.extractClasses(obj, results["classes"], "", 3, 2000);
         _JsVex.extractClassHierarchy(obj, results["hierarchy"], 3);
-        results["classes"] = _.chain(results["classes"])
+        results["classes"] = _underscore.chain(results["classes"])
             .groupBy("uuid")
             .mapObject(function (value, uuid) {
-            return { path: _JsVex.pathMap.get(uuid), properties: _.chain(value).indexBy("name").mapObject(function (v) {
+            return { path: _JsVex.pathMap.get(uuid), properties: _underscore.chain(value).indexBy("name").mapObject(function (v) {
                     return v.type;
                 }) };
         }).value();
@@ -64,7 +66,7 @@ var _JsVex = (function () {
         }
         else {
             maxRecursion--;
-            _.each(_JsVex.properties(obj), function (prop) {
+            _underscore.each(_JsVex.properties(obj), function (prop) {
                 if (prop.value) {
                     var proto = prop.value.prototype;
                     if (proto && Object.getOwnPropertyNames(proto).length > 1) {
@@ -92,7 +94,7 @@ var _JsVex = (function () {
             // Decrease number of available recursions
             maxRecursion--;
             _JsVex.pathMap.set(_JsVex.getUUID(obj), path);
-            _.each(_JsVex.properties(obj), function (prop) {
+            _underscore.each(_JsVex.properties(obj), function (prop) {
                 if (prop.value) {
                     if (prop.value.prototype) {
                         _JsVex.extractClasses(prop.value.prototype, results, _JsVex.join(path, prop.name), maxRecursion, maxLength);
@@ -108,7 +110,7 @@ var _JsVex = (function () {
     _JsVex.properties = function (object) {
         var props = Object.getOwnPropertyNames(object);
         var uuid = _JsVex.getUUID(object);
-        return _.chain(props)
+        return _underscore.chain(props)
             .filter(_JsVex.filter)
             .map(function (name) {
             var result = { uuid: uuid, name: name, type: null, value: null };
@@ -123,11 +125,11 @@ var _JsVex = (function () {
     _JsVex.uuid = 0;
     _JsVex.uuidMap = new Map();
     _JsVex.pathMap = new Map();
-    _JsVex.windowProps = _.omit(Object.getOwnPropertyNames(window), ["_"]);
+    _JsVex.windowProps = _underscore.keys(_underscore.omit(window, ["_"]));
     // Do not recurse over these types.
     _JsVex.ignoreTypes = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window
-    _JsVex.ignoreWindowProps = ["self", "frames", "parent", "content", "window", "top", "_"];
+    _JsVex.ignoreWindowProps = ["self", "frames", "parent", "content", "window", "top"];
     // These props are picked off the window by default if no url is provided.
     _JsVex.chosenWindowProps = ["Node", "Element", "Array", "Function", "Object", "Number",
         "Boolean", "String", "RegExp", "HTMLElement", "Event", "Error", "EventTarget", "Date"];
