@@ -4,10 +4,10 @@ import List = _.List;
 
 class _JsVex {
     static uuid: number = 0;
-    static uuidMap = new Map();
-    static pathMap = new Map();
+    static uuidMap: Map = new Map();
+    static pathMap: Map = new Map();
 
-    static windowProps: Array<string> = Object.getOwnPropertyNames(window);
+    static windowProps: Array<string> = _.omit(Object.getOwnPropertyNames(window), ["_"]);
     // Do not recurse over these types.
     static ignoreTypes: Array<string> = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window
@@ -50,21 +50,25 @@ class _JsVex {
     }
 
     static getUUID(object: any) {
-        let result = _JsVex.uuidMap.get(object) ? _JsVex.uuidMap.get(object) : ++_JsVex.uuid;
-        result = result.toString();
+        let result = _JsVex.uuidMap.get(object) ?
+            _JsVex.uuidMap.get(object) :
+            'xxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+                return v.toString(16);
+            });
         _JsVex.uuidMap.set(object, result);
         return result;
     }
     
-    static extractAll(ignoreWindow: boolean): Array<any> {
-        let results = [[], {}];
+    static extractAll(ignoreWindow: boolean): Result {
+        let results = {"classes": [], "hierarchy": {}};
         let obj = ignoreWindow ? _.omit(window, _JsVex.windowProps) :
             _.extend(_.omit(window, _JsVex.ignoreWindowProps), _.pick(window, _JsVex.chosenWindowProps));
 
-        _JsVex.extractClasses(obj, results[0], "", 3, 2000);
-        _JsVex.extractClassHierarchy(obj, results[1], 3);
+        _JsVex.extractClasses(obj, results["classes"], "", 3, 2000);
+        _JsVex.extractClassHierarchy(obj, results["hierarchy"], 3);
 
-        results[0] = _.chain(results[0])
+        results["classes"] = _.chain(results["classes"])
             .groupBy("uuid")
             .mapObject(function(value, uuid) {
                 return {path: _JsVex.pathMap.get(uuid), properties: _.chain(value).indexBy("name").mapObject(function(v) {
@@ -154,4 +158,14 @@ interface MetaProp {
     name: string;
     type: string;
     value: any;
+}
+
+interface Result {
+    classes: Array<any>;
+    hierarchy: any;
+}
+
+interface Map {
+    get: Function;
+    set: Function;
 }

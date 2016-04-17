@@ -31,18 +31,22 @@ var _JsVex = (function () {
             return value.charCodeAt(0) == 95;
     };
     _JsVex.getUUID = function (object) {
-        var result = _JsVex.uuidMap.get(object) ? _JsVex.uuidMap.get(object) : ++_JsVex.uuid;
-        result = result.toString();
+        var result = _JsVex.uuidMap.get(object) ?
+            _JsVex.uuidMap.get(object) :
+            'xxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
         _JsVex.uuidMap.set(object, result);
         return result;
     };
     _JsVex.extractAll = function (ignoreWindow) {
-        var results = [[], {}];
+        var results = { "classes": [], "hierarchy": {} };
         var obj = ignoreWindow ? _.omit(window, _JsVex.windowProps) :
             _.extend(_.omit(window, _JsVex.ignoreWindowProps), _.pick(window, _JsVex.chosenWindowProps));
-        _JsVex.extractClasses(obj, results[0], "", 3, 2000);
-        _JsVex.extractClassHierarchy(obj, results[1], 3);
-        results[0] = _.chain(results[0])
+        _JsVex.extractClasses(obj, results["classes"], "", 3, 2000);
+        _JsVex.extractClassHierarchy(obj, results["hierarchy"], 3);
+        results["classes"] = _.chain(results["classes"])
             .groupBy("uuid")
             .mapObject(function (value, uuid) {
             return { path: _JsVex.pathMap.get(uuid), properties: _.chain(value).indexBy("name").mapObject(function (v) {
@@ -119,7 +123,7 @@ var _JsVex = (function () {
     _JsVex.uuid = 0;
     _JsVex.uuidMap = new Map();
     _JsVex.pathMap = new Map();
-    _JsVex.windowProps = Object.getOwnPropertyNames(window);
+    _JsVex.windowProps = _.omit(Object.getOwnPropertyNames(window), ["_"]);
     // Do not recurse over these types.
     _JsVex.ignoreTypes = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window
