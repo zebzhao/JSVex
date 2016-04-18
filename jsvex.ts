@@ -47,9 +47,18 @@ class _JsVex {
                 value.toUpperCase() != value &&
                 value != "constructor" &&
                 value.indexOf("_") == -1 &&
-                value.indexOf("moz") == -1;
+                value.indexOf("moz") == -1 &&
+                !/^[0-9].*$/.test(value);
         else
-            return value.charCodeAt(0) == 95;
+            return !/^[0-9]$/.test(value);
+    }
+
+    static isInferredClass(name: String) {
+        return name.charAt(0).toUpperCase() != name.charAt(0).toLowerCase() && name.charAt(0).toUpperCase() == name.charAt(0);
+    }
+
+    static setUUID(object: any, uuid: string) {
+        _JsVex.uuidMap.set(object, uuid);
     }
 
     static getUUID(object: any) {
@@ -63,24 +72,33 @@ class _JsVex {
         return result;
     }
     
-    static extractAll(ignoreWindow: boolean): Result {
-        let results = {"classes": [], "hierarchy": {}};
+    static extractAll(ignoreWindow: boolean, compact: boolean): Result {
+        let results = {classes: [], hierarchy: {}};
         let obj = ignoreWindow ? _underscore.omit(window, _JsVex.windowProps) :
             _underscore.extend(_underscore.omit(window, _JsVex.ignoreWindowProps), _underscore.pick(window, _JsVex.chosenWindowProps));
 
-        _JsVex.extractClasses(obj, results["classes"], "", 3, 2000);
-        _JsVex.extractClassHierarchy(obj, results["hierarchy"], 3);
+        _JsVex.extractClasses(obj, results.classes, "", 3, 2000, false);
+        _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
 
-        results["classes"] = _underscore.chain(results["classes"])
-            .each(function(v) {
-                v.path = _JsVex.pathMap.get(v.uuid);
+        if (compact) {
+            results.classes = _underscore.chain(results.classes)
+                .each(function(v) {
+                    v.path = _JsVex.pathMap.get(v.uuid);
+                })
+                .groupBy("path")
+                .mapObject(function(value) {
+                    return _underscore.chain(value).indexBy("name").mapObject(function(v) {
+                        return v.type;
+                    });
+                }).value();
+        }
+        else {
+            results.classes = _underscore.map(results.classes, function(prop: MetaProp) {
+                let path = _JsVex.pathMap.get(prop.uuid);
+                let superclass = results.hierarchy[path + "." + prop.name];
+                return {name: prop.name, path: path, type: prop.type, superclass: superclass, args: prop.args};
             })
-            .groupBy("path")
-            .mapObject(function(value, uuid) {
-                return _underscore.chain(value).indexBy("name").mapObject(function(v) {
-                    return v.type;
-                });
-            }).value();
+        }
 
         return results;
     }
@@ -112,7 +130,7 @@ class _JsVex {
         }
     }
 
-    static extractClasses(obj: any, results: any, path: string, maxRecursion: number, maxLength: number) {
+    static extractClasses(obj: any, results: any, path: string, maxRecursion: number, maxLength: number, isClass: boolean) {
         if (maxRecursion <= 0 ||  // no more recursions available
             obj === undefined ||  // object isn't defined
             results.length > maxLength ||   // results reached max size
@@ -127,14 +145,17 @@ class _JsVex {
 
             _JsVex.pathMap.set(_JsVex.getUUID(obj), path);
 
-            _underscore.each(_JsVex.properties(obj), function(prop: MetaProp) {
-                if (prop.value) {
+            let props = isClass ? _JsVex.properties(obj).concat(_JsVex.classProperties(obj)) : _JsVex.properties(obj);
+
+            _underscore.each(props, function(prop: MetaProp) {
+                if (prop.value || prop.value === 0 || prop.value === "") {
                     if (prop.value.prototype) {
                         _JsVex.extractClasses(prop.value.prototype, results, _JsVex.join(path, prop.name),
-                            maxRecursion, maxLength);
+                            maxRecursion, maxLength, true);
                     }
                     if (_JsVex.ignoreTypes.indexOf(_JsVex.type(Object.getPrototypeOf(prop.value))) == -1) {
-                        _JsVex.extractClasses(prop.value, results, _JsVex.join(path, prop.name), maxRecursion, maxLength);
+                        _JsVex.extractClasses(prop.value, results, _JsVex.join(path, prop.name),
+                            maxRecursion, maxLength, false);
                     }
                     results.push(prop);
                 }
@@ -142,17 +163,42 @@ class _JsVex {
         }
     }
 
-    static properties(object: any):List<any> {
+    static classProperties(proto):Array<any> {
+        if (proto && proto.constructor) {
+            let body = proto.constructor.toString();
+            let name = body.match(/function[\s]*([^(]+)\(/)[1];
+
+            if (name && _JsVex.isInferredClass(name)) {
+                try {
+                    let instance = new proto.constructor();
+                    _JsVex.setUUID(instance, _JsVex.getUUID(proto));
+                    return _JsVex.properties(instance);
+                }
+                catch(e) {}
+            }
+        }
+        return [];
+    }
+
+    static args(func: Function):List<string> {
+        let args = /function[\s]*[^(]*\(([^)]*)\)[\s]*\{/.exec(func.toString())[1];
+        return args ? args.match(/(\w+)/g) : undefined;
+    }
+
+    static properties(object: any):Array<any> {
         let props = Object.getOwnPropertyNames(object);
         let uuid = _JsVex.getUUID(object);
 
         return _underscore.chain(props)
             .filter(_JsVex.filter)
             .map(function(name) {
-                let result: MetaProp = {uuid: uuid, name: name, type: null, value: null};
+                let result: MetaProp = {uuid: uuid, name: name, type: null, value: null, args: undefined};
                 try {
                     result.value = object[name];
                     result.type = _JsVex.type(result.value);
+                    if (result.type == "Function") {
+                        result.args = _JsVex.args(result.value);
+                    }
                 }
                 catch(e) {}
                 return result;
@@ -165,6 +211,7 @@ interface MetaProp {
     name: string;
     type: string;
     value: any;
+    args: List<string>;
 }
 
 interface Result {
