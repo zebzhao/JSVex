@@ -39,10 +39,11 @@ var _JsVex = (function () {
     _JsVex.setUUID = function (object, uuid) {
         _JsVex.uuidMap.set(object, uuid);
     };
-    _JsVex.getUUID = function (object) {
+    _JsVex.getUUID = function (object, length) {
+        if (length === void 0) { length = 10; }
         var result = _JsVex.uuidMap.get(object) ?
             _JsVex.uuidMap.get(object) :
-            'xxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            (new Array(length + 1)).join('x').replace(/[xy]/g, function (c) {
                 var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
                 return v.toString(16);
             });

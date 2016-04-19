@@ -1,24 +1,12 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
-
-html
-  head(lang='en')
-
-  body
     script.
-      function onsubmit() {
-        var form = document.forms["jsvex"];
-        _JsVex.load(form.url.value, function () {
-          form["body"].value = JSON.stringify(_JsVex.extractAll(form.url.value.length > 0), "", "\\t");
-        });
-      }
-    .uk-container.uk-container-center.uk-margin-top.uk-margin-large-bottom
-      .uk-panel.uk-panel-space.uk-text-center
-        form#jsvex.uk-form.uk-form-stacked(action='javascript:void(0);', onsubmit='window.onsubmit()')
-          .uk-form-row.uk-text-center
-            input#url.uk-form-width-large(type='text', value='data/EaselJS-master/lib/easeljs-0.8.2.combined.js')
-          .uk-form-row.uk-text-center
-            textarea#body.uk-form-width-large(placeholder='', style='height: 350px;')
+        function _process() {
+            _JsVex.load(document.getElementById('url').value, function () {
+                document.getElementById('body').value = JSON.stringify(_JsVex.extractAll(document.getElementById('url').value.length > 0), "", " ");
+            });
+        }
+    input#url(type = 'text')
+    button#load(onclick='_process()') Load
+    textarea#body(placeholder='', style='display:block;width:70%;height:400px')

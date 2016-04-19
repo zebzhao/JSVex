@@ -61,10 +61,10 @@ class _JsVex {
         _JsVex.uuidMap.set(object, uuid);
     }
 
-    static getUUID(object: any) {
+    static getUUID(object: any, length=10) {
         let result = _JsVex.uuidMap.get(object) ?
             _JsVex.uuidMap.get(object) :
-            'xxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            (new Array(length+1)).join('x').replace(/[xy]/g, function(c) {
                 var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
                 return v.toString(16);
             });
