@@ -1,6 +1,20 @@
 /// <reference path="underscore.d.ts" />
 var _underscore = _;
 delete _;
+var _Map = (function () {
+    function _Map() {
+        this.keys = [];
+        this.values = [];
+    }
+    _Map.prototype.get = function (obj) {
+        return this.values[this.keys.indexOf(obj)];
+    };
+    _Map.prototype.set = function (obj, value) {
+        this.keys.unshift(obj);
+        this.values.unshift(value);
+    };
+    return _Map;
+}());
 var _JsVex = (function () {
     function _JsVex() {
     }
@@ -166,8 +180,8 @@ var _JsVex = (function () {
         }).value();
     };
     _JsVex.uuid = 0;
-    _JsVex.uuidMap = new Map();
-    _JsVex.pathMap = new Map();
+    _JsVex.uuidMap = new _Map();
+    _JsVex.pathMap = new _Map();
     _JsVex.windowProps = _underscore.keys(_underscore.omit(window, ["_"]));
     // Do not recurse over these types.
     _JsVex.ignoreTypes = ["Array", "Boolean", "Number", "String", "Function"];

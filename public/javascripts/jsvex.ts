@@ -5,10 +5,29 @@ import List = _.List;
 var _underscore = _;
 delete _;
 
+class _Map {
+    keys: Array<any>;
+    values: Array<any>;
+
+    constructor() {
+        this.keys = [];
+        this.values = [];
+    }
+
+    get(obj: any) {
+        return this.values[this.keys.indexOf(obj)];
+    }
+
+    set(obj: any, value: any) {
+        this.keys.unshift(obj);
+        this.values.unshift(value);
+    }
+}
+
 class _JsVex {
     static uuid: number = 0;
-    static uuidMap: Map = new Map();
-    static pathMap: Map = new Map();
+    static uuidMap: _Map = new _Map();
+    static pathMap: _Map = new _Map();
 
     static windowProps: Array<string> = _underscore.keys(_underscore.omit(window, ["_"]));
     // Do not recurse over these types.
@@ -217,9 +236,4 @@ interface MetaProp {
 interface Result {
     classes: Array<any>;
     hierarchy: any;
-}
-
-interface Map {
-    get: Function;
-    set: Function;
 }
