@@ -6,6 +6,8 @@ import List = _.List;
 var _underscore = _;
 delete _;
 
+pyscript.initialize('requests');
+
 class _Map {
     keys: Array<any>;
     values: Array<any>;
@@ -26,30 +28,29 @@ class _Map {
 }
 
 class _Consumer {
-    static MAX_CONSUMPTION: number = 10;
+    static MAX_CONSUMPTION: number = 100;
     static tasks: Array<string>;
 
     static fetchTasks() {
         pyscript.requests.get("api/tasks", null)
             .then(function() {
-                _Consumer.tasks = JSON.parse(this.responseData);
+                _Consumer.tasks = JSON.parse(this.responseText);
                 _Consumer.consumeTasks();
             })
     }
 
     static consumeTasks() {
+        let files = {};
         for (var i=0; i < _Consumer.MAX_CONSUMPTION; i++) {
             if (_Consumer.tasks.length == 0) {
                 break;
             }
-
-            let url: string = _Consumer.tasks.pop();
-
-            _JsVex.load(url, function() {
-                pyscript.requests.post(
-                    "api/urls", {url: url, json: JSON.stringify(_JsVex.extractAll(false, false))});
-            });
+            else {
+                let url: string = _Consumer.tasks.pop();
+                files[url] = JSON.stringify(_JsVex.extractAll(false, false));
+            }
         }
+        pyscript.requests.post("api/files", files);
     }
 }
 
@@ -129,7 +130,7 @@ class _JsVex {
         _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
 
         // Remove newly defined variables
-        _.chain(_JsVex.windowProps)
+        _underscore.chain(_JsVex.windowProps)
             .difference(Object.getOwnPropertyNames(window))
             .each(function(value) {
                 console.log("deleting", value);

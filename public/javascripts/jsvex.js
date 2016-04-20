@@ -2,6 +2,7 @@
 /// <reference path="pyscript.d.ts" />
 var _underscore = _;
 delete _;
+pyscript.initialize('requests');
 var _Map = (function () {
     function _Map() {
         this.keys = [];
@@ -22,26 +23,24 @@ var _Consumer = (function () {
     _Consumer.fetchTasks = function () {
         pyscript.requests.get("api/tasks", null)
             .then(function () {
-            _Consumer.tasks = JSON.parse(this.responseData);
+            _Consumer.tasks = JSON.parse(this.responseText);
             _Consumer.consumeTasks();
         });
     };
     _Consumer.consumeTasks = function () {
-        var _loop_1 = function() {
-            if (_Consumer.tasks.length == 0) {
-                return "break";
-            }
-            var url = _Consumer.tasks.pop();
-            _JsVex.load(url, function () {
-                pyscript.requests.post("api/urls", { url: url, json: JSON.stringify(_JsVex.extractAll(false, false)) });
-            });
-        };
+        var files = {};
         for (var i = 0; i < _Consumer.MAX_CONSUMPTION; i++) {
-            var state_1 = _loop_1();
-            if (state_1 === "break") break;
+            if (_Consumer.tasks.length == 0) {
+                break;
+            }
+            else {
+                var url = _Consumer.tasks.pop();
+                files[url] = JSON.stringify(_JsVex.extractAll(false, false));
+            }
         }
+        pyscript.requests.post("api/files", files);
     };
-    _Consumer.MAX_CONSUMPTION = 10;
+    _Consumer.MAX_CONSUMPTION = 100;
     return _Consumer;
 }());
 var _JsVex = (function () {
@@ -100,7 +99,7 @@ var _JsVex = (function () {
         _JsVex.extractClasses(obj, results.classes, "", 3, 2000, false);
         _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
         // Remove newly defined variables
-        _.chain(_JsVex.windowProps)
+        _underscore.chain(_JsVex.windowProps)
             .difference(Object.getOwnPropertyNames(window))
             .each(function (value) {
             console.log("deleting", value);

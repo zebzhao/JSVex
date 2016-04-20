@@ -6,3 +6,7 @@ declare module pyscript.requests {
         then(callback: Function): Promise;
     }
 }
+
+declare module pyscript {
+    function initialized(module: string);
+}

@@ -1,11 +1,14 @@
 var express = require('express');
+var router = express.Router();
 var path = require('path');
+
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
-var index = require('./routes/index');
-var api = require('./routes/api');
+var crypto = require('crypto');
+var md5sum = crypto.createHash('md5');
+var fs = fs = require('fs');
 
 var app = express();
 
@@ -21,8 +24,26 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', index);
-app.use('/', api);
+app.use('/', router);
+
+
+router.get('/', function(req, res, next) {
+    res.render('index', { title: 'Jsvex' });
+});
+
+router.get('/api/tasks', function(req, res, next) {
+    res.sendFile(__dirname + '/tasks.json');
+});
+
+router.post('/api/files', function(req, res, next) {
+    if (req.body) {
+        for (var url in req.body) {
+            console.log(url.split("://", 2))
+            var hash = md5sum.update(url.split("://", 2)[1]).digest("hex");
+            fs.writeFile(__dirname + "/data/" + hash + ".json", req.body[url]);
+        }
+    }
+});
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
