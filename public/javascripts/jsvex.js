@@ -1,4 +1,5 @@
 /// <reference path="underscore.d.ts" />
+/// <reference path="pyscript.d.ts" />
 var _underscore = _;
 delete _;
 var _Map = (function () {
@@ -14,6 +15,34 @@ var _Map = (function () {
         this.values.unshift(value);
     };
     return _Map;
+}());
+var _Consumer = (function () {
+    function _Consumer() {
+    }
+    _Consumer.fetchTasks = function () {
+        pyscript.requests.get("api/tasks", null)
+            .then(function () {
+            _Consumer.tasks = JSON.parse(this.responseData);
+            _Consumer.consumeTasks();
+        });
+    };
+    _Consumer.consumeTasks = function () {
+        var _loop_1 = function() {
+            if (_Consumer.tasks.length == 0) {
+                return "break";
+            }
+            var url = _Consumer.tasks.pop();
+            _JsVex.load(url, function () {
+                pyscript.requests.post("api/urls", { url: url, json: JSON.stringify(_JsVex.extractAll(false, false)) });
+            });
+        };
+        for (var i = 0; i < _Consumer.MAX_CONSUMPTION; i++) {
+            var state_1 = _loop_1();
+            if (state_1 === "break") break;
+        }
+    };
+    _Consumer.MAX_CONSUMPTION = 10;
+    return _Consumer;
 }());
 var _JsVex = (function () {
     function _JsVex() {
@@ -70,6 +99,13 @@ var _JsVex = (function () {
             _underscore.extend(_underscore.omit(window, _JsVex.ignoreWindowProps), _underscore.pick(window, _JsVex.chosenWindowProps));
         _JsVex.extractClasses(obj, results.classes, "", 3, 2000, false);
         _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
+        // Remove newly defined variables
+        _.chain(_JsVex.windowProps)
+            .difference(Object.getOwnPropertyNames(window))
+            .each(function (value) {
+            console.log("deleting", value);
+            delete window[value];
+        });
         if (compact) {
             results.classes = _underscore.chain(results.classes)
                 .each(function (v) {
@@ -182,7 +218,7 @@ var _JsVex = (function () {
     _JsVex.uuid = 0;
     _JsVex.uuidMap = new _Map();
     _JsVex.pathMap = new _Map();
-    _JsVex.windowProps = _underscore.keys(_underscore.omit(window, ["_"]));
+    _JsVex.windowProps = Object.getOwnPropertyNames(window);
     // Do not recurse over these types.
     _JsVex.ignoreTypes = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window

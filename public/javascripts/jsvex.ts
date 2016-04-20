@@ -1,4 +1,5 @@
 /// <reference path="underscore.d.ts" />
+/// <reference path="pyscript.d.ts" />
 
 import List = _.List;
 
@@ -24,12 +25,40 @@ class _Map {
     }
 }
 
+class _Consumer {
+    static MAX_CONSUMPTION: number = 10;
+    static tasks: Array<string>;
+
+    static fetchTasks() {
+        pyscript.requests.get("api/tasks", null)
+            .then(function() {
+                _Consumer.tasks = JSON.parse(this.responseData);
+                _Consumer.consumeTasks();
+            })
+    }
+
+    static consumeTasks() {
+        for (var i=0; i < _Consumer.MAX_CONSUMPTION; i++) {
+            if (_Consumer.tasks.length == 0) {
+                break;
+            }
+
+            let url: string = _Consumer.tasks.pop();
+
+            _JsVex.load(url, function() {
+                pyscript.requests.post(
+                    "api/urls", {url: url, json: JSON.stringify(_JsVex.extractAll(false, false))});
+            });
+        }
+    }
+}
+
 class _JsVex {
     static uuid: number = 0;
     static uuidMap: _Map = new _Map();
     static pathMap: _Map = new _Map();
 
-    static windowProps: Array<string> = _underscore.keys(_underscore.omit(window, ["_"]));
+    static windowProps: Array<string> = Object.getOwnPropertyNames(window);
     // Do not recurse over these types.
     static ignoreTypes: Array<string> = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window
@@ -98,6 +127,14 @@ class _JsVex {
 
         _JsVex.extractClasses(obj, results.classes, "", 3, 2000, false);
         _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
+
+        // Remove newly defined variables
+        _.chain(_JsVex.windowProps)
+            .difference(Object.getOwnPropertyNames(window))
+            .each(function(value) {
+                console.log("deleting", value);
+                delete window[value];
+            });
 
         if (compact) {
             results.classes = _underscore.chain(results.classes)
