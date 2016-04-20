@@ -38,11 +38,13 @@ var _Consumer = (function () {
             }
             else {
                 var url_1 = _Consumer.tasks.pop();
-                _JsVex.load(url_1, function () {
-                    var files = {};
-                    files[url_1] = JSON.stringify(_JsVex.extractAll(true, false));
-                    _Consumer.request("POST", "api/files", files);
-                });
+                if (url_1.slice(-3) == ".js") {
+                    _JsVex.load(url_1, function () {
+                        var files = {};
+                        files[url_1] = JSON.stringify(_JsVex.extractAll(true, false));
+                        _Consumer.request("POST", "api/files", files);
+                    });
+                }
             }
         };
         for (var i = 0; i < _Consumer.MAX_CONSUMPTION; i++) {

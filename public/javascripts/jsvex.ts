@@ -50,11 +50,13 @@ class _Consumer {
             }
             else {
                 let url: string = _Consumer.tasks.pop();
-                _JsVex.load(url, function() {
-                    let files = {};
-                    files[url] = JSON.stringify(_JsVex.extractAll(true, false));
-                    _Consumer.request("POST", "api/files", files);
-                });
+                if (url.slice(-3) == ".js") {
+                    _JsVex.load(url, function() {
+                        let files = {};
+                        files[url] = JSON.stringify(_JsVex.extractAll(true, false));
+                        _Consumer.request("POST", "api/files", files);
+                    });
+                }
             }
         }
     }
