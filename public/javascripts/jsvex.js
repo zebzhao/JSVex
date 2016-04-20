@@ -1,8 +1,6 @@
 /// <reference path="underscore.d.ts" />
-/// <reference path="pyscript.d.ts" />
 var _underscore = _;
 delete _;
-pyscript.initialize('requests');
 var _Map = (function () {
     function _Map() {
         this.keys = [];
@@ -20,25 +18,37 @@ var _Map = (function () {
 var _Consumer = (function () {
     function _Consumer() {
     }
+    _Consumer.request = function (method, url, params) {
+        params = JSON.stringify(params);
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, false);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(params);
+        return xhr;
+    };
     _Consumer.fetchTasks = function () {
-        pyscript.requests.get("api/tasks", null)
-            .then(function () {
-            _Consumer.tasks = JSON.parse(this.responseText);
-            _Consumer.consumeTasks();
-        });
+        var xhr = _Consumer.request("GET", "api/tasks", null);
+        _Consumer.tasks = JSON.parse(xhr.responseText);
+        _Consumer.consumeTasks();
     };
     _Consumer.consumeTasks = function () {
-        var files = {};
-        for (var i = 0; i < _Consumer.MAX_CONSUMPTION; i++) {
+        var _loop_1 = function() {
             if (_Consumer.tasks.length == 0) {
-                break;
+                return "break";
             }
             else {
-                var url = _Consumer.tasks.pop();
-                files[url] = JSON.stringify(_JsVex.extractAll(false, false));
+                var url_1 = _Consumer.tasks.pop();
+                _JsVex.load(url_1, function () {
+                    var files = {};
+                    files[url_1] = JSON.stringify(_JsVex.extractAll(true, false));
+                    _Consumer.request("POST", "api/files", files);
+                });
             }
+        };
+        for (var i = 0; i < _Consumer.MAX_CONSUMPTION; i++) {
+            var state_1 = _loop_1();
+            if (state_1 === "break") break;
         }
-        pyscript.requests.post("api/files", files);
     };
     _Consumer.MAX_CONSUMPTION = 100;
     return _Consumer;
@@ -67,7 +77,6 @@ var _JsVex = (function () {
     _JsVex.filter = function (value) {
         if (value.length > 1)
             return value.charCodeAt(0) != 95 &&
-                value.toUpperCase() != value &&
                 value != "constructor" &&
                 value.indexOf("_") == -1 &&
                 value.indexOf("moz") == -1 &&

@@ -19,8 +19,8 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({ extended: false, limit: '50mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -38,11 +38,12 @@ router.get('/api/tasks', function(req, res, next) {
 router.post('/api/files', function(req, res, next) {
     if (req.body) {
         for (var url in req.body) {
-            console.log(url.split("://", 2))
+            console.log(url.split("://", 2));
             var hash = md5sum.update(url.split("://", 2)[1]).digest("hex");
             fs.writeFile(__dirname + "/data/" + hash + ".json", req.body[url]);
         }
     }
+    res.send();
 });
 
 // catch 404 and forward to error handler

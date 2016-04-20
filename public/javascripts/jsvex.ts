@@ -1,12 +1,9 @@
 /// <reference path="underscore.d.ts" />
-/// <reference path="pyscript.d.ts" />
 
 import List = _.List;
 
 var _underscore = _;
 delete _;
-
-pyscript.initialize('requests');
 
 class _Map {
     keys: Array<any>;
@@ -31,26 +28,35 @@ class _Consumer {
     static MAX_CONSUMPTION: number = 100;
     static tasks: Array<string>;
 
+    static request(method, url, params) {
+        params = JSON.stringify(params);
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, false);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(params);
+        return xhr;
+    }
+
     static fetchTasks() {
-        pyscript.requests.get("api/tasks", null)
-            .then(function() {
-                _Consumer.tasks = JSON.parse(this.responseText);
-                _Consumer.consumeTasks();
-            })
+        var xhr = _Consumer.request("GET", "api/tasks", null);
+        _Consumer.tasks = JSON.parse(xhr.responseText);
+        _Consumer.consumeTasks();
     }
 
     static consumeTasks() {
-        let files = {};
         for (var i=0; i < _Consumer.MAX_CONSUMPTION; i++) {
             if (_Consumer.tasks.length == 0) {
                 break;
             }
             else {
                 let url: string = _Consumer.tasks.pop();
-                files[url] = JSON.stringify(_JsVex.extractAll(false, false));
+                _JsVex.load(url, function() {
+                    let files = {};
+                    files[url] = JSON.stringify(_JsVex.extractAll(true, false));
+                    _Consumer.request("POST", "api/files", files);
+                });
             }
         }
-        pyscript.requests.post("api/files", files);
     }
 }
 
@@ -93,7 +99,6 @@ class _JsVex {
     static filter(value: string): boolean {
         if (value.length > 1)
             return value.charCodeAt(0) != 95 &&
-                value.toUpperCase() != value &&
                 value != "constructor" &&
                 value.indexOf("_") == -1 &&
                 value.indexOf("moz") == -1 &&
