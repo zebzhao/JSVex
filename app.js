@@ -36,7 +36,7 @@ router.post('/api/files', function(req, res, next) {
             console.log(url.split("://", 2));
             var md5sum = crypto.createHash('md5');
             var hash = md5sum.update(url.split("://", 2)[1]).digest("hex");
-            fs.writeFile(__dirname + "/data/" + hash + ".json", req.body[url]);
+            fs.writeFile(__dirname + "/public/json/" + hash + ".json", req.body[url]);
         }
     }
     res.send();

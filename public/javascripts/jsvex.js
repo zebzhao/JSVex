@@ -139,8 +139,7 @@ var _JsVex = (function () {
         else {
             results.classes = _underscore.map(results.classes, function (prop) {
                 var path = _JsVex.pathMap.get(prop.uuid);
-                var superclass = results.hierarchy[path + "." + prop.name];
-                return { name: prop.name, path: path, type: prop.type, superclass: superclass, args: prop.args };
+                return { name: prop.name, path: path, type: prop.type, args: prop.args };
             });
         }
         return results;
