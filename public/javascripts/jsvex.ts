@@ -26,7 +26,7 @@ class _Map {
 
 class _Consumer {
     static MAX_CONSUMPTION: number = 1;
-    static TIMEOUT: number = 500;
+    static TIMEOUT: number = 2000;
     static tasks: Array<string>;
     static timeoutHandler: number;
 
@@ -53,11 +53,12 @@ class _Consumer {
                 break;
             }
             else {
-                let url: string = _Consumer.tasks.pop();
-                if (url.slice(-3) == ".js") {
-                    _JsVex.load(url, function() {
+                let task: any = _Consumer.tasks.pop();
+                if (task.url.slice(-3) == ".js") {
+                    _JsVex.load(task.url, function() {
+                        console.log(task.url);
                         let files = {};
-                        files[url] = JSON.stringify(_JsVex.extractAll(true, false));
+                        files[task.url] = JSON.stringify(_JsVex.extractAll(true, false));
                         _Consumer.request("POST", "api/files", files);
                     });
                 }
@@ -71,7 +72,7 @@ class _JsVex {
     static uuidMap: _Map = new _Map();
     static pathMap: _Map = new _Map();
 
-    static windowProps: Array<string> = Object.getOwnPropertyNames(window);
+    static windowProps: Array<string> = Object.getOwnPropertyNames(_underscore.omit(window, [])).concat(["_process"]);
     // Do not recurse over these types.
     static ignoreTypes: Array<string> = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window
@@ -90,7 +91,6 @@ class _JsVex {
         document.head.appendChild(script);
         script.addEventListener("load", onLoad);
         script.src = url;
-        console.log(url);
         return script;
     }
 
@@ -143,8 +143,15 @@ class _JsVex {
         // Remove newly defined variables
         _underscore.each(Object.getOwnPropertyNames(_underscore.omit(window, _JsVex.windowProps)),
             function(value: any) {
-                console.log("deleting", value);
-                delete window[value];
+                if (window[value] !== undefined) {
+                    console.log("deleting", value);
+                    delete window[value];
+                    if (window[value]) {
+                        console.log("cannot be deleted, ignoring:", value);
+                        // Some vars declared with var in global scope CANNOT be deleted
+                        window[value] = undefined;
+                    }
+                }
             });
 
         if (compact) {

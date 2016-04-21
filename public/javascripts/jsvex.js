@@ -39,11 +39,12 @@ var _Consumer = (function () {
                 return "break";
             }
             else {
-                var url_1 = _Consumer.tasks.pop();
-                if (url_1.slice(-3) == ".js") {
-                    _JsVex.load(url_1, function () {
+                var task_1 = _Consumer.tasks.pop();
+                if (task_1.url.slice(-3) == ".js") {
+                    _JsVex.load(task_1.url, function () {
+                        console.log(task_1.url);
                         var files = {};
-                        files[url_1] = JSON.stringify(_JsVex.extractAll(true, false));
+                        files[task_1.url] = JSON.stringify(_JsVex.extractAll(true, false));
                         _Consumer.request("POST", "api/files", files);
                     });
                 }
@@ -55,7 +56,7 @@ var _Consumer = (function () {
         }
     };
     _Consumer.MAX_CONSUMPTION = 1;
-    _Consumer.TIMEOUT = 500;
+    _Consumer.TIMEOUT = 2000;
     return _Consumer;
 }());
 var _JsVex = (function () {
@@ -70,7 +71,6 @@ var _JsVex = (function () {
         document.head.appendChild(script);
         script.addEventListener("load", onLoad);
         script.src = url;
-        console.log(url);
         return script;
     };
     _JsVex.join = function (root, path) {
@@ -114,8 +114,15 @@ var _JsVex = (function () {
         _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
         // Remove newly defined variables
         _underscore.each(Object.getOwnPropertyNames(_underscore.omit(window, _JsVex.windowProps)), function (value) {
-            console.log("deleting", value);
-            delete window[value];
+            if (window[value] !== undefined) {
+                console.log("deleting", value);
+                delete window[value];
+                if (window[value]) {
+                    console.log("cannot be deleted, ignoring:", value);
+                    // Some vars declared with var in global scope CANNOT be deleted
+                    window[value] = undefined;
+                }
+            }
         });
         if (compact) {
             results.classes = _underscore.chain(results.classes)
@@ -229,7 +236,7 @@ var _JsVex = (function () {
     _JsVex.uuid = 0;
     _JsVex.uuidMap = new _Map();
     _JsVex.pathMap = new _Map();
-    _JsVex.windowProps = Object.getOwnPropertyNames(window);
+    _JsVex.windowProps = Object.getOwnPropertyNames(_underscore.omit(window, [])).concat(["_process"]);
     // Do not recurse over these types.
     _JsVex.ignoreTypes = ["Array", "Boolean", "Number", "String", "Function"];
     // These props all result in cyclic references to window
