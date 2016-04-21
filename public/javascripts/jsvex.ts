@@ -25,8 +25,10 @@ class _Map {
 }
 
 class _Consumer {
-    static MAX_CONSUMPTION: number = 100;
+    static MAX_CONSUMPTION: number = 1;
+    static TIMEOUT: number = 500;
     static tasks: Array<string>;
+    static timeoutHandler: number;
 
     static request(method, url, params) {
         params = JSON.stringify(params);
@@ -40,12 +42,14 @@ class _Consumer {
     static fetchTasks() {
         var xhr = _Consumer.request("GET", "api/tasks", null);
         _Consumer.tasks = JSON.parse(xhr.responseText);
-        _Consumer.consumeTasks();
+        _Consumer.timeoutHandler = setInterval(_Consumer.consumeTasks, _Consumer.TIMEOUT);
     }
 
     static consumeTasks() {
         for (var i=0; i < _Consumer.MAX_CONSUMPTION; i++) {
             if (_Consumer.tasks.length == 0) {
+                clearTimeout(_Consumer.timeoutHandler);
+                _Consumer.timeoutHandler = NaN;
                 break;
             }
             else {
@@ -137,9 +141,8 @@ class _JsVex {
         _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
 
         // Remove newly defined variables
-        _underscore.chain(_JsVex.windowProps)
-            .difference(Object.getOwnPropertyNames(window))
-            .each(function(value) {
+        _underscore.each(Object.getOwnPropertyNames(_underscore.omit(window, _JsVex.windowProps)),
+            function(value: any) {
                 console.log("deleting", value);
                 delete window[value];
             });

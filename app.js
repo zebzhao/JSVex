@@ -7,7 +7,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var crypto = require('crypto');
-var md5sum = crypto.createHash('md5');
 var fs = fs = require('fs');
 
 var app = express();
@@ -39,6 +38,7 @@ router.post('/api/files', function(req, res, next) {
     if (req.body) {
         for (var url in req.body) {
             console.log(url.split("://", 2));
+            var md5sum = crypto.createHash('md5');
             var hash = md5sum.update(url.split("://", 2)[1]).digest("hex");
             fs.writeFile(__dirname + "/data/" + hash + ".json", req.body[url]);
         }

@@ -29,11 +29,13 @@ var _Consumer = (function () {
     _Consumer.fetchTasks = function () {
         var xhr = _Consumer.request("GET", "api/tasks", null);
         _Consumer.tasks = JSON.parse(xhr.responseText);
-        _Consumer.consumeTasks();
+        _Consumer.timeoutHandler = setInterval(_Consumer.consumeTasks, _Consumer.TIMEOUT);
     };
     _Consumer.consumeTasks = function () {
         var _loop_1 = function() {
             if (_Consumer.tasks.length == 0) {
+                clearTimeout(_Consumer.timeoutHandler);
+                _Consumer.timeoutHandler = NaN;
                 return "break";
             }
             else {
@@ -52,7 +54,8 @@ var _Consumer = (function () {
             if (state_1 === "break") break;
         }
     };
-    _Consumer.MAX_CONSUMPTION = 100;
+    _Consumer.MAX_CONSUMPTION = 1;
+    _Consumer.TIMEOUT = 500;
     return _Consumer;
 }());
 var _JsVex = (function () {
@@ -110,9 +113,7 @@ var _JsVex = (function () {
         _JsVex.extractClasses(obj, results.classes, "", 3, 2000, false);
         _JsVex.extractClassHierarchy(obj, results.hierarchy, 3);
         // Remove newly defined variables
-        _underscore.chain(_JsVex.windowProps)
-            .difference(Object.getOwnPropertyNames(window))
-            .each(function (value) {
+        _underscore.each(Object.getOwnPropertyNames(_underscore.omit(window, _JsVex.windowProps)), function (value) {
             console.log("deleting", value);
             delete window[value];
         });
