@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var crypto = require('crypto');
+var fs = fs = require('fs');
+var _ = require('underscore');
+
+var obj = JSON.parse(fs.readFileSync(__dirname + "/../public/json/directory.json", 'utf8'));
+
+_.each(obj, function(item) {
+    var md5sum = crypto.createHash('md5');
+    item.hash = md5sum.update(item.value.split("://", 2)[1]).digest("hex");
+});
+
+fs.writeFile(__dirname + "/../public/json/directory.json", JSON.stringify(obj, "", " "));
