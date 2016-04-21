@@ -27,7 +27,7 @@ var _Consumer = (function () {
         return xhr;
     };
     _Consumer.fetchTasks = function () {
-        var xhr = _Consumer.request("GET", "api/tasks", null);
+        var xhr = _Consumer.request("GET", "json/directory.json", null);
         _Consumer.tasks = JSON.parse(xhr.responseText);
         _Consumer.timeoutHandler = setInterval(_Consumer.consumeTasks, _Consumer.TIMEOUT);
     };
@@ -40,11 +40,11 @@ var _Consumer = (function () {
             }
             else {
                 var task_1 = _Consumer.tasks.pop();
-                if (task_1.url.slice(-3) == ".js") {
-                    _JsVex.load(task_1.url, function () {
-                        console.log(task_1.url);
+                if (task_1.value.slice(-3) == ".js") {
+                    _JsVex.load(task_1.value, function () {
+                        console.log(task_1.value);
                         var files = {};
-                        files[task_1.url] = JSON.stringify(_JsVex.extractAll(true, false));
+                        files[task_1.value] = JSON.stringify(_JsVex.extractAll(true, false));
                         _Consumer.request("POST", "api/files", files);
                     });
                 }

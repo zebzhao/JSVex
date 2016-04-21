@@ -40,7 +40,7 @@ class _Consumer {
     }
 
     static fetchTasks() {
-        var xhr = _Consumer.request("GET", "api/tasks", null);
+        var xhr = _Consumer.request("GET", "json/directory.json", null);
         _Consumer.tasks = JSON.parse(xhr.responseText);
         _Consumer.timeoutHandler = setInterval(_Consumer.consumeTasks, _Consumer.TIMEOUT);
     }
@@ -54,11 +54,11 @@ class _Consumer {
             }
             else {
                 let task: any = _Consumer.tasks.pop();
-                if (task.url.slice(-3) == ".js") {
-                    _JsVex.load(task.url, function() {
-                        console.log(task.url);
+                if (task.value.slice(-3) == ".js") {
+                    _JsVex.load(task.value, function() {
+                        console.log(task.value);
                         let files = {};
-                        files[task.url] = JSON.stringify(_JsVex.extractAll(true, false));
+                        files[task.value] = JSON.stringify(_JsVex.extractAll(true, false));
                         _Consumer.request("POST", "api/files", files);
                     });
                 }

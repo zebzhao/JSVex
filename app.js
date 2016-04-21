@@ -30,10 +30,6 @@ router.get('/', function(req, res, next) {
     res.render('index', { title: 'Jsvex' });
 });
 
-router.get('/api/tasks', function(req, res, next) {
-    res.sendFile(__dirname + '/tasks.json');
-});
-
 router.post('/api/files', function(req, res, next) {
     if (req.body) {
         for (var url in req.body) {
