@@ -1,0 +1,110 @@
+{
+  "d3": {
+    "latest": {
+      "local": [
+        "bower_components/d3/d3.js",
+        "bower_components/d3/d3.min.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.16/d3.min.js"
+      ]
+    }
+  },
+  "EaselJS": {
+    "latest": {
+      "local": [
+        "bower_components/EaselJS/lib/easeljs-0.8.2.combined.js",
+        "bower_components/EaselJS/lib/easeljs-0.8.2.min.js"
+      ],
+      "cdn": [
+        "https://code.createjs.com/easeljs-0.8.2.min.js",
+        "https://code.createjs.com/easeljs-0.8.2.min.js"
+      ]
+    }
+  },
+  "jquery": {
+    "latest": {
+      "local": [
+        "bower_components/jquery/dist/jquery.js",
+        "bower_components/jquery/dist/jquery.min.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"
+      ]
+    }
+  },
+  "phaser": {
+    "latest": {
+      "local": [
+        "bower_components/phaser/build/phaser.js",
+        "bower_components/phaser/build/phaser.min.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/custom/p2.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/custom/p2.min.js"
+      ]
+    }
+  },
+  "phaser-creature": {
+    "latest": {
+      "local": [
+        "bower_components/phaser/build/phaser-creature.js",
+        "bower_components/phaser/build/phaser-creature.min.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/creature.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/creature.min.js"
+      ]
+    }
+  },
+  "p2": {
+    "latest": {
+      "local": [
+        "bower_components/phaser/build/p2.js",
+        "bower_components/phaser/build/p2.min.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/p2.js",
+        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/p2.min.js"
+      ]
+    }
+  },
+  "PreloadJS": {
+    "latest": {
+      "local": [
+        "bower_components/PreloadJS/lib/preloadjs-0.6.2.combined.js",
+        "bower_components/PreloadJS/lib/preloadjs-0.6.2.min.js"
+      ],
+      "cdn": [
+        "https://code.createjs.com/preloadjs-0.6.2.min.js",
+        "https://code.createjs.com/preloadjs-0.6.2.min.js"
+      ]
+    }
+  },
+  "SoundJS": {
+    "latest": {
+      "local": [
+        "bower_components/SoundJS/lib/soundjs-0.6.2.combined.js",
+        "bower_components/SoundJS/lib/soundjs-0.6.2.min.js"
+      ],
+      "cdn": [
+        "https://code.createjs.com/soundjs-0.6.2.min.js",
+        "https://code.createjs.com/soundjs-0.6.2.min.js"
+      ]
+    }
+  },
+  "TweenJS": {
+    "latest": {
+      "local": [
+        "bower_components/TweenJS/lib/tweenjs-0.6.2.combined.js",
+        "bower_components/TweenJS/lib/tweenjs-0.6.2.min.js"
+      ],
+      "cdn": [
+        "https://code.createjs.com/tweenjs-0.6.2.min.js",
+        "https://code.createjs.com/tweenjs-0.6.2.min.js"
+      ]
+    }
+  }
+}

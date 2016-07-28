@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+var fs = require('fs');
+var path = require('path');
+
+var config = require(path.join(__dirname, 'jsvex.json'));
+var libs = Object.keys(config);
+var index = [];
+
+libs.map(function(name) {
+    var versions = Object.keys(libs[name]);
+    versions.map(function(version) {
+        index.push({
+            name: name + ' (' + version + ')',
+            hash: name + '--' + version
+        });
+    });
+});
+
+
+// fs.writeFile(__dirname + "/../output/index.json", JSON.stringify({}, "", " "));
