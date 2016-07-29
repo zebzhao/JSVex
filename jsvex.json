@@ -1,6 +1,6 @@
 {
   "d3": {
-    "latest": {
+    "3.5.16": {
       "local": [
         "bower_components/d3/d3.js",
         "bower_components/d3/d3.min.js"
@@ -12,7 +12,7 @@
     }
   },
   "EaselJS": {
-    "latest": {
+    "0.8.2": {
       "local": [
         "bower_components/EaselJS/lib/easeljs-0.8.2.combined.js",
         "bower_components/EaselJS/lib/easeljs-0.8.2.min.js"
@@ -24,7 +24,7 @@
     }
   },
   "jquery": {
-    "latest": {
+    "3.1.0": {
       "local": [
         "bower_components/jquery/dist/jquery.js",
         "bower_components/jquery/dist/jquery.min.js"
@@ -36,7 +36,7 @@
     }
   },
   "phaser": {
-    "latest": {
+    "2.6.1": {
       "local": [
         "bower_components/phaser/build/phaser.js",
         "bower_components/phaser/build/phaser.min.js"
@@ -48,7 +48,7 @@
     }
   },
   "phaser-creature": {
-    "latest": {
+    "2.6.1": {
       "local": [
         "bower_components/phaser/build/phaser-creature.js",
         "bower_components/phaser/build/phaser-creature.min.js"
@@ -60,7 +60,7 @@
     }
   },
   "p2": {
-    "latest": {
+    "2.6.1": {
       "local": [
         "bower_components/phaser/build/p2.js",
         "bower_components/phaser/build/p2.min.js"
@@ -72,7 +72,7 @@
     }
   },
   "PreloadJS": {
-    "latest": {
+    "0.6.2": {
       "local": [
         "bower_components/PreloadJS/lib/preloadjs-0.6.2.combined.js",
         "bower_components/PreloadJS/lib/preloadjs-0.6.2.min.js"
@@ -84,7 +84,7 @@
     }
   },
   "SoundJS": {
-    "latest": {
+    "0.6.2": {
       "local": [
         "bower_components/SoundJS/lib/soundjs-0.6.2.combined.js",
         "bower_components/SoundJS/lib/soundjs-0.6.2.min.js"
@@ -96,7 +96,7 @@
     }
   },
   "TweenJS": {
-    "latest": {
+    "0.6.2": {
       "local": [
         "bower_components/TweenJS/lib/tweenjs-0.6.2.combined.js",
         "bower_components/TweenJS/lib/tweenjs-0.6.2.min.js"

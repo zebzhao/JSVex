@@ -6,20 +6,28 @@
 
 var fs = require('fs');
 var path = require('path');
+var util = require('util');
 
-var config = require(path.join(__dirname, 'jsvex.json'));
+var config = JSON.parse(fs.readFileSync(path.join(__dirname, 'jsvex.json')));
 var libs = Object.keys(config);
 var index = [];
+var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin doc_comment %s > %s\n";
+var shell = "";
 
 libs.map(function(name) {
-    var versions = Object.keys(libs[name]);
+    var versions = Object.keys(config[name]);
     versions.map(function(version) {
-        index.push({
-            name: name + ' (' + version + ')',
-            hash: name + '--' + version
-        });
+        var data = {
+            text: name + '@' + version,
+            value: config[name][version].cdn[1],
+            hash: 'def--' + name + '--' + version
+        };
+        index.push(data);
+        shell += util.format(cmdPattern,  data.text,
+            config[name][version].local[0], 'output/' + data.hash + '.json');
     });
 });
 
 
-// fs.writeFile(__dirname + "/../output/index.json", JSON.stringify({}, "", " "));
+fs.writeFile(path.join(__dirname, "/output/index.json"), JSON.stringify(index, "", " "));
+fs.writeFile(path.join(__dirname, "/make.sh"), shell);
