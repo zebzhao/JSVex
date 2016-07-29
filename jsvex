@@ -11,7 +11,7 @@ var util = require('util');
 var config = JSON.parse(fs.readFileSync(path.join(__dirname, 'jsvex.json')));
 var libs = Object.keys(config);
 var index = [];
-var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin doc_comment %s > %s\n";
+var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin doc_comment --no-spans %s > %s\n";
 var shell = "";
 
 libs.map(function(name) {
