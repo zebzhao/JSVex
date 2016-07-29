@@ -59,18 +59,6 @@
       ]
     }
   },
-  "p2": {
-    "2.6.1": {
-      "local": [
-        "bower_components/phaser/build/p2.js",
-        "bower_components/phaser/build/p2.min.js"
-      ],
-      "cdn": [
-        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/p2.js",
-        "https://cdnjs.cloudflare.com/ajax/libs/phaser/2.6.1/p2.min.js"
-      ]
-    }
-  },
   "PreloadJS": {
     "0.6.2": {
       "local": [
