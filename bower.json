@@ -3,20 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "angular-1.5.x": "angular#1.5.x",
     "bootstrap-3.3.x": "bootstrap#3.3.x",
+    "backbone-1.3.x": "backbone#1.3.x",
     "d3-4.2.x": "d3#4.2.x",
     "d3-3.5.x": "d3#3.5.x",
     "EaselJS-0.8.x": "EaselJS#0.8.x",
     "SoundJS-0.6.x": "SoundJS#0.6.x",
     "TweenJS-0.6.x": "TweenJS#0.6.x",
     "PreloadJS-0.6.x": "PreloadJS#0.6.x",
-    "lodash-4.16.x": "lodash#4.16.x",
     "materialize-0.97.x": "materialize#0.97.x",
     "material-design-lite-1.2.x": "material-design-lite#1.2.x",
     "jquery-3.1.x": "jquery#3.1.x",
+    "jquery-2.2.x": "jquery#2.2.x",
     "jquery-1.9.x": "jquery#1.9.x",
     "phaser-2.6.x": "phaser#2.6.x",
-    "three.js-0.80.x": "three.js#0.80.x"
+    "three.js-0.80.x": "three.js#0.80.x",
+    "underscore-1.8.x": "underscore#1.8.x"
   }
 }

@@ -12,7 +12,7 @@ var _ = require('lodash');
 var config = JSON.parse(fs.readFileSync(path.join(__dirname, 'jsvex.json')));
 var libs = Object.keys(config);
 var files = [];
-var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin angular --def browser --no-spans %s > %s\n";
+var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin doc_comment --def browser --no-spans %s > %s\n";
 var shell = "";
 
 libs.map(function(name) {
@@ -54,5 +54,12 @@ libs.map(function(name) {
     });
 });
 
+/*
+ The following error when compiling some libraries is caused by read-only fields:
+ .../node_modules/tern/lib/condense.js:219
+ if (!hop(base, last)) base[last] = type.nameOverride || type.path;
+ ^
+ Fix this by removing 'use-strict' tern/lib/tern.js, tern/lib/condense.js, tern/lib/infer.js
+ */
 fs.writeFile(path.join(__dirname, "/output/index.json"), JSON.stringify(index, "", " "));
 fs.writeFile(path.join(__dirname, "/make.sh"), shell);
