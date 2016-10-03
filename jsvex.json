@@ -83,6 +83,27 @@
       ]
     }
   },
+  "impress.js": {
+    "0.5.x": {
+      "local": [
+        "bower_components/impress.js-0.5.x/js/impress.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/impress.js/0.5.3/impress.min.js"
+      ]
+    }
+  },
+  "Leaflet": {
+    "1.0.x": {
+      "local": [
+        "bower_components/leaflet-1.0.x/dist/leaflet.js"
+      ],
+      "cdn": [
+        "https://unpkg.com/leaflet@1.0.1/dist/leaflet.css",
+        "https://unpkg.com/leaflet@1.0.1/dist/leaflet.js"
+      ]
+    }
+  },
   "Materialize": {
     "0.97.x": {
       "local": [
@@ -166,13 +187,21 @@
       ]
     }
   },
-  "Underscore": {
-    "1.8.x": {
+  "Vue.js": {
+    "2.0.x": {
       "local": [
-        "bower_components/underscore-1.8.x/underscore.js"
+        "bower_components/vue-2.0.x/dist/vue.js"
       ],
       "cdn": [
-        "https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"
+        "https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.1/vue.js"
+      ]
+    },
+    "1.0.x": {
+      "local": [
+        "bower_components/vue-1.0.x/dist/vue.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.28/vue.js"
       ]
     }
   }

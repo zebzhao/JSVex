@@ -12,13 +12,17 @@
     "SoundJS-0.6.x": "SoundJS#0.6.x",
     "TweenJS-0.6.x": "TweenJS#0.6.x",
     "PreloadJS-0.6.x": "PreloadJS#0.6.x",
+    "impress.js-0.5.x": "impress.js#0.5.x",
     "materialize-0.97.x": "materialize#0.97.x",
     "material-design-lite-1.2.x": "material-design-lite#1.2.x",
+    "leaflet-1.0.x": "leaflet#1.0.x",
     "jquery-3.1.x": "jquery#3.1.x",
     "jquery-2.2.x": "jquery#2.2.x",
     "jquery-1.9.x": "jquery#1.9.x",
     "phaser-2.6.x": "phaser#2.6.x",
     "three.js-0.80.x": "three.js#0.80.x",
-    "underscore-1.8.x": "underscore#1.8.x"
+    "underscore-1.8.x": "underscore#1.8.x",
+    "vue-2.0.x": "vue#2.0.x",
+    "vue-1.0.x": "vue#1.0.x"
   }
 }
