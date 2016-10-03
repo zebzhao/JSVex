@@ -7,10 +7,11 @@
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
+var _ = require('lodash');
 
 var config = JSON.parse(fs.readFileSync(path.join(__dirname, 'jsvex.json')));
 var libs = Object.keys(config);
-var index = [];
+var files = [];
 var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin doc_comment --no-spans %s > %s\n";
 var shell = "";
 
@@ -18,16 +19,29 @@ libs.map(function(name) {
     var versions = Object.keys(config[name]);
     versions.map(function(version) {
         var data = {
-            text: name + '@' + version,
-            value: config[name][version].cdn[1],
-            hash: 'def--' + name + '--' + version
+            label: name,
+            version: version,
+            values: [config[name][version].cdn[1]],
+            file: 'def~' + name + '~' + version
         };
-        index.push(data);
-        shell += util.format(cmdPattern,  data.text,
-            config[name][version].local[0], 'output/' + data.hash + '.json');
+        files.push(data);
+        shell += util.format(cmdPattern, data.label,
+            config[name][version].local[0], 'output/' + data.file + '.json');
     });
 });
 
+var index = [];
+var grouped = _.groupBy(files, 'label');
+libs.sort();
+libs.map(function(name) {
+    index.push({
+        label: name,
+        versions: _.map(grouped[name], 'version').sort(),
+        data: _.transform(_.groupBy(grouped[name], 'version'), function(result, value, key) {
+            result[key] = {values: value[0].values, file: value[0].file}
+        }, {})
+    });
+});
 
 fs.writeFile(path.join(__dirname, "/output/index.json"), JSON.stringify(index, "", " "));
 fs.writeFile(path.join(__dirname, "/make.sh"), shell);

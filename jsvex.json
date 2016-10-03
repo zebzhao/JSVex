@@ -1,5 +1,5 @@
 {
-  "d3": {
+  "D3": {
     "3.5.16": {
       "local": [
         "bower_components/d3/d3.js",
@@ -23,7 +23,7 @@
       ]
     }
   },
-  "jquery": {
+  "jQuery": {
     "3.1.0": {
       "local": [
         "bower_components/jquery/dist/jquery.js",
@@ -35,7 +35,7 @@
       ]
     }
   },
-  "phaser": {
+  "Phaser": {
     "2.6.1": {
       "local": [
         "bower_components/phaser/build/phaser.js",
@@ -47,7 +47,7 @@
       ]
     }
   },
-  "phaser-creature": {
+  "Phaser.Creature": {
     "2.6.1": {
       "local": [
         "bower_components/phaser/build/phaser-creature.js",
