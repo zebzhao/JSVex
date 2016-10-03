@@ -29,8 +29,6 @@ fs.readdir( OUTPUT, function( err, files ) {
                 var json = JSON.parse(fs.readFileSync(fp));
                 recursiveDelete(json, '!url');
                 recursiveDelete(json, '!doc');
-                if (fp.indexOf("Underscore~") == -1)
-                    recursiveDeletePrivateProperties(json);
                 var out = path.join(DIST, file);
                 fs.writeFile(out, JSON.stringify(json, null, 0));
             }
