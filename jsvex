@@ -12,7 +12,7 @@ var _ = require('lodash');
 var config = JSON.parse(fs.readFileSync(path.join(__dirname, 'jsvex.json')));
 var libs = Object.keys(config);
 var files = [];
-var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin doc_comment --no-spans %s > %s\n";
+var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin angular --def browser --no-spans %s > %s\n";
 var shell = "";
 
 libs.map(function(name) {
@@ -25,9 +25,17 @@ libs.map(function(name) {
             file: config[name][version].local.length ? 'def~' + name + '~' + version : undefined
         };
         files.push(data);
-        if (config[name][version].local.length)
-            shell += util.format(cmdPattern, data.label,
-                config[name][version].local[0], 'output/' + data.file + '.json');
+        var fp = 'output/' + data.file + '.json';
+        try {
+            var stats = fs.statSync(fp);
+            console.log('File exists: ' + fp);
+        }
+        catch(err) {
+            // file does not exist
+            if (config[name][version].local.length)
+                shell += util.format(cmdPattern, data.label,
+                    config[name][version].local[0], fp);
+        }
     });
 });
 

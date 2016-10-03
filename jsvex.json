@@ -12,7 +12,6 @@
   "Bootstrap": {
     "3.3.x": {
       "local": [
-        "bower_components/bootstrap-3.3.x/dist/js/bootstrap.js"
       ],
       "cdn": [
         "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css",
@@ -59,27 +58,17 @@
     },
     "1.9.x": {
       "local": [
-        "bower_components/jquery-1.9.x/dist/jquery.js"
+        "bower_components/jquery-1.9.x/jquery.js"
       ],
       "cdn": [
         "https://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js"
       ]
     }
   },
-  "Lodash": {
-    "4.16.x": {
-      "local": [
-        "bower_components/lodash-4.16.x/dist/lodash.js",
-      ],
-      "cdn": [
-        "https://cdn.jsdelivr.net/lodash/4.16.2/lodash.min.js"
-      ]
-    }
-  },
   "Materialize": {
     "0.97.x": {
       "local": [
-        "bower_components/materialize-0.97.x/dist/js/materialize.js",
+        "bower_components/materialize-0.97.x/dist/js/materialize.js"
       ],
       "cdn": [
         "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css",
@@ -87,7 +76,7 @@
       ]
     }
   },
-  "Material Design Lite": {
+  "Material-Design-Lite": {
     "1.2.x": {
       "local": [
         "bower_components/material-design-lite-1.2.x/material.js"
