@@ -16,6 +16,8 @@ var cmdPattern = "node node_modules/tern/bin/condense --name %s --plugin doc_com
 var shell = "";
 
 libs.map(function(name) {
+    var priority = config[name].priority;
+    delete config[name].priority;
     var versions = Object.keys(config[name]);
     versions.map(function(version) {
         if (config[name][version].ignore) {
@@ -25,6 +27,7 @@ libs.map(function(name) {
             label: name,
             version: version,
             values: config[name][version].cdn,
+            priority: priority,
             file: config[name][version].local.length ? 'def~' + name + '~' + version : undefined
         };
         files.push(data);
@@ -50,7 +53,8 @@ libs.sort(function (a, b) {
 libs.map(function(name) {
     index.push({
         label: name,
-        versions: _.map(grouped[name], 'version').sort(),
+        priority: grouped[name][0].priority,
+        versions: _.map(grouped[name], 'version').sort().reverse(),
         data: _.transform(_.groupBy(grouped[name], 'version'), function(result, value, key) {
             result[key] = {values: value[0].values, file: value[0].file}
         }, {})
