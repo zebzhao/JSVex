@@ -18,6 +18,9 @@ var shell = "";
 libs.map(function(name) {
     var versions = Object.keys(config[name]);
     versions.map(function(version) {
+        if (config[name][version].ignore) {
+            return;
+        }
         var data = {
             label: name,
             version: version,

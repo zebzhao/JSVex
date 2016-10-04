@@ -1,4 +1,12 @@
 {
+  "AngularJS": {
+    "1.5.x": {
+      "local": [],
+      "cdn": [
+        "https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"
+      ]
+    }
+  },
   "BabylonJS": {
     "2.4.x": {
       "local": [
@@ -19,9 +27,26 @@
       ]
     }
   },
+  "Bluebird": {
+    "3.4.x": {
+      "local": [
+      ],
+      "cdn": [
+        "https://cdn.jsdelivr.net/bluebird/3.4.6/bluebird.min.js"
+      ]
+    },
+    "2.11.x": {
+      "local": [
+      ],
+      "cdn": [
+        "https://cdn.jsdelivr.net/bluebird/2.11.0/bluebird.min.js"
+      ]
+    }
+  },
   "Bootstrap": {
     "3.3.x": {
       "local": [
+        "bower_components/bootstrap-3.3.x/dist/js/bootstrap.js"
       ],
       "cdn": [
         "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css",
@@ -104,6 +129,17 @@
       ]
     }
   },
+  "Lodash": {
+    "2.4.x": {
+      "ignore": true,
+      "local": [
+        "bower_components/lodash-2.4.x/dist/lodash.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.2/lodash.min.js"
+      ]
+    }
+  },
   "Materialize": {
     "0.97.x": {
       "local": [
@@ -124,6 +160,17 @@
         "https://fonts.googleapis.com/icon?family=Material+Icons",
         "https://code.getmdl.io/1.2.1/material.indigo-pink.min.css",
         "https://code.getmdl.io/1.2.1/material.min.js"
+      ]
+    }
+  },
+  "NVD3": {
+    "1.8.x": {
+      "local": [
+        "bower_components/nvd3-1.8.x/build/nv.d3.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.min.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.4/nv.d3.min.js"
       ]
     }
   },
@@ -184,6 +231,27 @@
       ],
       "cdn": [
         "https://cdnjs.cloudflare.com/ajax/libs/three.js/r80/three.min.js"
+      ]
+    }
+  },
+  "Underscore": {
+    "1.8.x": {
+      "local": [
+        "bower_components/underscore-1.8.x/underscore.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"
+      ]
+    }
+  },
+  "UIkit": {
+    "2.27.x": {
+      "local": [
+        "bower_components/uikit-2.27.x/js/uikit.js"
+      ],
+      "cdn": [
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/2.27.1/css/uikit.css",
+        "https://cdnjs.cloudflare.com/ajax/libs/uikit/2.27.1/js/uikit.min.js"
       ]
     }
   },
