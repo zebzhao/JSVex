@@ -29,6 +29,9 @@ fs.readdir( OUTPUT, function( err, files ) {
                 var json = JSON.parse(fs.readFileSync(fp));
                 recursiveDelete(json, '!url');
                 recursiveDelete(json, '!doc');
+                recursiveDeleteProperties(json, function(name, val) {
+                    return name.indexOf('<i>') != -1 || (typeof val == 'string' && val.indexOf('<i>') != -1);
+                });
                 var out = path.join(DIST, file);
                 fs.writeFile(out, JSON.stringify(json, null, 0));
             }
@@ -48,16 +51,16 @@ function recursiveDelete(obj, prop, maxLen) {
     }
 }
 
-function recursiveDeletePrivateProperties(obj) {
-    for (var name in obj) {
-        if (name.charAt(0) == '_') {
+function recursiveDeleteProperties(obj, callback) {
+    Object.keys(obj).forEach(function(name) {
+        if (callback(name, obj[name])) {
             delete obj[name];
         }
-    }
+    });
     var keys = Object.keys(obj);
     for (var ii = 0; ii < keys.length; ++ii) {
         if (typeof obj[keys[ii]] == 'object') {
-            recursiveDeletePrivateProperties(obj[keys[ii]]);
+            recursiveDeleteProperties(obj[keys[ii]], callback);
         }
     }
 }
